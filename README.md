@@ -34,8 +34,8 @@
 | chat-watch（单联系人） | ✅ `watchdog.py` · delta 归档 |
 | mp-capture（可选） | ✅ mitmproxy addon |
 | 解密缓存路径 | ✅ 统一 `output/decrypted/` |
-| CI | ✅ Windows `compileall` |
-| 自动化测试 | ⏳ 计划中（pytest smoke） |
+| CI | ✅ compileall + pytest smoke |
+| 自动化测试 | ✅ `tests/` smoke · `scripts/verify.ps1` |
 
 **维护笔记：** [docs/STANDALONE.md](docs/STANDALONE.md)
 
@@ -109,7 +109,7 @@ copy .env.example .env
 
 ## Git
 
-- 分支 `main`；PR 须在 Windows 下通过 `compileall`。
+- 分支 `main`；PR 须在 Windows 下通过 `scripts/verify.ps1 -SkipIntegration`（或 CI）。
 - 密钥、`output/`、`.env` **永不提交**。
 
 ## License

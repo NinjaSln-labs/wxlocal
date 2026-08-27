@@ -35,7 +35,7 @@ fetch_full_content.py
 parse_merged.py
 find_contact.py
 debug_*.py
-test_*.py
+/test_*.py
 login_scan.py
 fast_login_scan.py
 check_dbs.py

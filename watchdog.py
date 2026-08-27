@@ -37,7 +37,7 @@ WCDB_TOOL = PROJECT_ROOT / "vendor" / "wcdb-key-tool-main" / "wcdb_key_tool_wind
 DELTA_SCRIPT = PROJECT_ROOT / "archive_ninjasin_delta.py"
 PID_FILE = NINJASIN_STATE_DIR / "ninjasin_watch.pid"
 
-DEFAULT_INTERVAL = 60
+DEFAULT_INTERVAL = int(os.environ.get("WECHAT_WATCH_INTERVAL", "60"))
 WECHAT_WAIT_INTERVAL = 15
 
 _LOGGER: logging.Logger | None = None

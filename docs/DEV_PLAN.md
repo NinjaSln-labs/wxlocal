@@ -36,16 +36,25 @@ T4 doc links OK
 
 ---
 
-## Phase B — 测试基建（下一步）
+## Phase B — 测试基建 ✅
 
 **目标**：CI 不只 `compileall`，增加无外部依赖的 smoke。
 
-| 项 | 说明 | 验收 |
+| 项 | 状态 | 验收 |
 |----|------|------|
-| B1 `tests/test_paths.py` | `ensure_decrypted_dir()` 在 temp 目录迁移 legacy → canonical | pytest |
-| B2 `tests/test_config.py` | `.env.example` 键与 `config.py` 一致 | pytest |
-| B3 CI 加 `pytest tests/` | `pip install -e ".[dev]"` 后跑 | GitHub Actions green |
-| B4 `scripts/verify.ps1` | 一键 T1–T4（T5 待 B3） | 本地一条命令 |
+| B1 `tests/test_paths.py` | ✅ | `ensure_decrypted_dir()` legacy → canonical |
+| B2 `tests/test_config.py` | ✅ | `.env.example` 键在 runtime 文件中有引用 |
+| B3 CI 加 `pytest tests/` | ✅ | GitHub Actions |
+| B4 `scripts/verify.ps1` | ✅ | 一键 T1–T5（`-SkipIntegration` 跳过 T2/T3） |
+
+**2026-08-27 记录（Phase B）：**
+
+```
+T1 compileall OK
+T5 pytest 4 passed
+T2/T3 --once OK (local integration)
+T4 doc links OK
+```
 
 **不做**：依赖真实 `WECHAT_DATA_ROOT` / 微信进程的集成测试进 CI（仅本地 `--once` 手测）。
 
