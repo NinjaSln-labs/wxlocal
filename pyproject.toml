@@ -1,0 +1,50 @@
+[project]
+name = "wxlocal"
+version = "0.1.0"
+description = "Personal learning / research: read WeChat PC 4.x local data. No warranty. See DISCLAIMER.md."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "NinjaSin Labs" }]
+keywords = ["wechat", "wxlocal", "wcdb", "indexeddb", "decryption"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Chat",
+]
+
+dependencies = [
+    "pycryptodome>=3.20.0",
+    "zstd>=1.5.0",
+    "sqlcipher3>=0.6.0",
+    "flask>=3.0.0",
+    "mitmproxy>=11.0.0",
+    "chromium-reader>=0.1.1",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "opencv-python>=4.8.0",
+    "numpy>=1.26.0",
+    "rapidocr-onnxruntime>=1.3.0",
+    "onnxruntime>=1.16.0",
+    "pillow>=10.0.0",
+]
+leveldb = ["plyvel-ci>=1.5.0"]
+dev = ["pytest>=8.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/ninjasin-labs/wxlocal"
+Documentation = "https://github.com/ninjasin-labs/wxlocal/blob/main/docs/STANDALONE.md"
+Issues = "https://github.com/ninjasin-labs/wxlocal/issues"
+
+[tool.setuptools.packages.find]
+include = ["mp_capture*"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

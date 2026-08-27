@@ -1,0 +1,48 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# Runtime / secrets
+output/
+decrypted/
+data/knowledge-base/
+data/state/
+*.log
+.env
+.env.local
+docs/LOCAL_SETUP.md
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# OCR / temp
+*.png
+!docs/**/*.png
+
+# Local dev / personal scripts (not shipped in OSS)
+fetch_full_content.py
+parse_merged.py
+find_contact.py
+debug_*.py
+test_*.py
+login_scan.py
+fast_login_scan.py
+check_dbs.py
+extract_key_from_info.py
+read_key_info.py
+_check_*.py
+_print_*.py
+_sample_*.py
+scan_keys.py
+

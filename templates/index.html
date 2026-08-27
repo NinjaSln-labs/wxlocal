@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信聊天记录读取</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #1a1a1a; }
+    .header { background: #07c160; color: #fff; padding: 16px 24px; }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header p { font-size: 13px; opacity: .85; margin-top: 4px; }
+    .container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #333; }
+    label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+    textarea { width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: "Consolas", monospace; font-size: 13px; resize: vertical; }
+    textarea:focus { outline: none; border-color: #07c160; }
+    .hint { font-size: 12px; color: #999; margin-top: 6px; }
+    .btns { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; transition: opacity .2s; }
+    button:hover { opacity: .85; }
+    .btn-primary { background: #07c160; color: #fff; }
+    .btn-secondary { background: #e8e8e8; color: #333; }
+    .btn-export { background: #1890ff; color: #fff; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+    .alert-error { background: #fff2f0; color: #cf1322; border: 1px solid #ffccc7; }
+    .alert-info { background: #e6f7ff; color: #096dd9; border: 1px solid #91d5ff; }
+    .alert-success { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+    .layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
+    @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+    .session-list { max-height: 500px; overflow-y: auto; }
+    .session-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f0f0f0; word-break: break-all; }
+    .session-item:hover, .session-item.active { background: #e6f7ed; }
+    .msg-list { max-height: 500px; overflow-y: auto; }
+    .msg { padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+    .msg-time { font-size: 11px; color: #999; }
+    .msg-sender { font-size: 13px; font-weight: 600; color: #07c160; margin: 2px 0; }
+    .msg-content { font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .empty { text-align: center; color: #bbb; padding: 40px; font-size: 14px; }
+    .status-bar { font-size: 12px; color: #999; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>微信聊天记录读取</h1>
+    <p>本地 Web 工具 · 粘贴密钥后解密查看 · 数据不上传</p>
+  </div>
+
+  <div class="container">
+  {% if last_error %}
+    <div class="alert alert-error">{{ last_error }}</div>
+  {% endif %}
+  {% if last_info %}
+    <div class="alert alert-success">{{ last_info }}</div>
+  {% endif %}
+
+  <div class="card">
+    <h2>① 输入密钥</h2>
+    <label for="keyInput">粘贴从其他工具获取的密钥，或转发过来的 hex 文本</label>
+    <textarea id="keyInput" placeholder="支持格式：&#10;• 64 位 hex（passphrase）&#10;• x'96位hex' 格式&#10;• 从 wcdb-key-tool 等工具复制的完整输出"></textarea>
+    <p class="hint">微信 4.1+ 需要 32 字节 passphrase（64 位 hex）。从工具复制后 Ctrl+V 粘贴即可，会自动识别。</p>
+    <div class="btns">
+      <button class="btn-primary" onclick="doDecrypt()">解密并读取</button>
+      <button class="btn-secondary" onclick="doAutoScan()">自动扫描内存</button>
+    </div>
+    <p class="status-bar" id="statusText">{% if ready %}数据目录已就绪{% else %}未找到微信数据目录{% endif %}</p>
+  </div>
+
+  <div class="card" id="chatSection" style="display:none">
+    <h2>② 聊天记录</h2>
+    <div class="search-bar">
+      <input id="searchInput" placeholder="搜索关键词或联系人..." onkeydown="if(event.key==='Enter')loadMessages()">
+      <button class="btn-secondary" onclick="loadMessages()">搜索</button>
+      <button class="btn-export" onclick="doExport()">导出 JSON</button>
+    </div>
+    <div class="layout">
+      <div>
+        <h2 style="font-size:14px;margin-bottom:8px">会话列表</h2>
+        <div class="session-list" id="sessionList"><div class="empty">加载中...</div></div>
+      </div>
+      <div>
+        <h2 style="font-size:14px;margin-bottom:8px">消息 <span id="msgCount"></span></h2>
+        <div class="msg-list" id="msgList"><div class="empty">请先解密数据库</div></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    let currentTalker = '';
+
+    function showAlert(msg, type) {
+      const el = document.createElement('div');
+      el.className = 'alert alert-' + type;
+      el.textContent = msg;
+      document.querySelector('.container').prepend(el);
+      setTimeout(() => el.remove(), 5000);
+    }
+
+    async function doDecrypt() {
+      const text = document.getElementById('keyInput').value.trim();
+      if (!text) { showAlert('请先粘贴密钥', 'error'); return; }
+      document.getElementById('statusText').textContent = '解密中...';
+      try {
+        const res = await fetch('/api/decrypt', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({text})
+        });
+        const data = await res.json();
+        if (!data.ok) { showAlert(data.error || '解密失败', 'error'); document.getElementById('statusText').textContent = data.error; return; }
+        showAlert(data.info || '解密成功', 'success');
+        document.getElementById('statusText').textContent = data.info;
+        document.getElementById('chatSection').style.display = 'block';
+        loadSessions();
+        loadMessages();
+      } catch (e) { showAlert('请求失败: ' + e.message, 'error'); }
+    }
+
+    async function doAutoScan() {
+      document.getElementById('statusText').textContent = '扫描内存中（需管理员权限）...';
+      try {
+        const res = await fetch('/api/auto-scan', {method: 'POST'});
+        const data = await res.json();
+        if (!data.ok) { showAlert(data.error || '扫描失败', 'error'); document.getElementById('statusText').textContent = data.error; return; }
+        if (data.passphrase_hex) document.getElementById('keyInput').value = data.passphrase_hex;
+        showAlert(data.info || '扫描并解密成功', 'success');
+        document.getElementById('statusText').textContent = data.info;
+        document.getElementById('chatSection').style.display = 'block';
+        loadSessions();
+        loadMessages();
+      } catch (e) { showAlert('请求失败: ' + e.message, 'error'); }
+    }
+
+    async function loadSessions() {
+      const res = await fetch('/api/sessions?limit=50');
+      const data = await res.json();
+      const el = document.getElementById('sessionList');
+      if (!data.sessions || !data.sessions.length) { el.innerHTML = '<div class="empty">暂无会话</div>'; return; }
+      el.innerHTML = data.sessions.map((s, i) => {
+        const name = s.strUsrName || s.username || s.talker || JSON.stringify(s).slice(0, 40);
+        const talker = s.strUsrName || s.username || s.talker || '';
+        return `<div class="session-item" data-talker="${talker}" onclick="selectTalker('${talker}', this)">${name}</div>`;
+      }).join('');
+    }
+
+    function selectTalker(talker, el) {
+      currentTalker = talker;
+      document.querySelectorAll('.session-item').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      loadMessages();
+    }
+
+    async function loadMessages() {
+      const keyword = document.getElementById('searchInput').value.trim();
+      let url = `/api/messages?limit=100`;
+      if (currentTalker) url += `&talker=${encodeURIComponent(currentTalker)}`;
+      if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const el = document.getElementById('msgList');
+      document.getElementById('msgCount').textContent = `(${data.count || 0} 条)`;
+      if (!data.messages || !data.messages.length) { el.innerHTML = '<div class="empty">暂无消息</div>'; return; }
+      el.innerHTML = data.messages.map(m => `
+        <div class="msg">
+          <div class="msg-time">${m.time}</div>
+          <div class="msg-sender">${m.sender}</div>
+          <div class="msg-content">${escapeHtml(m.content || '')}</div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function doExport() {
+      window.open('/api/export', '_blank');
+    }
+
+    {% if decrypted %}
+    document.getElementById('chatSection').style.display = 'block';
+    loadSessions();
+    loadMessages();
+    {% endif %}
+  </script>
+</body>
+</html>
