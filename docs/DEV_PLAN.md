@@ -60,22 +60,31 @@ T4 doc links OK
 
 ---
 
-## Phase C — 代码质量（审计遗留）
+## Phase C — 代码质量 ✅
 
-| 项 | 说明 | 验收 |
+| 项 | 状态 | 验收 |
 |----|------|------|
-| C1 daemon 公共逻辑抽取 | `watch_mp_idb.py` / `watchdog.py` 重复（日志、pid、once 模式） | T1–T3 仍通过 |
-| C2 `run_extract.bat` 去硬编码 | 读 `.env` 的 `WECHAT_DATA_ROOT` / `WXLOCAL_PYTHON` | 新环境仅改 `.env` 可跑 |
-| C3 清理 legacy `wechat-reader` 目录 | `scripts/remove_legacy_wechat_reader_folder.ps1` | 目录不存在 |
+| C1 daemon 公共逻辑抽取 | ✅ | `daemon_util.py` · T1–T3 通过 |
+| C2 `run_extract.bat` 去硬编码 | ✅ | `.env` + `scripts/resolve_db_storage.py` |
+| C3 清理 legacy `wechat-reader` 目录 | ⚠️ | 脚本已加固；`.venv` 被占用时需关 Cursor 后重跑 |
 
 ---
 
-## Phase D — 运维与自启
+## Phase D — 运维与自启 ✅
 
-| 项 | 说明 | 验收 |
+| 项 | 状态 | 验收 |
 |----|------|------|
-| D1 `setup_autostart.ps1` 文案与 `setup_wxlocal_autostart.bat` 一致 | 避免两套说明 | 读一遍无矛盾 |
-| D2 `status_wxlocal.bat` 显示两 daemon PID | 运维可见性 | 自启后 status 有输出 |
+| D1 `setup_autostart.ps1` 转发至 wxlocal 自启 | ✅ | 无矛盾说明 |
+| D2 `status_wxlocal.bat` 显示两 daemon PID | ✅ | `scripts/daemon_status.py` |
+
+**2026-08-27 记录（Phase C/D）：**
+
+```
+T1 compileall OK
+T5 pytest 8 passed
+T2/T3 --once OK
+T4 doc links OK
+```
 
 ---
 

@@ -1,6 +1,7 @@
 @echo off
 :: 微信 4.1.13 一键提取密钥 + 解密 + 导出
 :: 需管理员权限提取密钥；微信需已登录
+:: 配置：复制 .env.example -> .env，设置 WECHAT_DATA_ROOT
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
@@ -9,9 +10,26 @@ if %errorlevel% neq 0 (
 )
 
 cd /d "%~dp0"
-set DB_DIR=D:\app\WeixinData\xwechat_files\sndddepdc_who_29ad\db_storage
-set PY=E:\Python312\python.exe
 set VPY=.venv\Scripts\python.exe
+if not exist "%VPY%" (
+    echo [!] 未找到虚拟环境: %VPY%
+    pause
+    exit /b 1
+)
+
+for /f "delims=" %%i in ('"%VPY%" scripts\print_env.py WXLOCAL_PYTHON') do set PY=%%i
+if not defined PY set PY=%VPY%
+
+for /f "delims=" %%i in ('"%VPY%" scripts\resolve_db_storage.py') do set DB_DIR=%%i
+if not defined DB_DIR (
+    echo [!] 未找到 db_storage。请在 .env 设置 WECHAT_DATA_ROOT 并确保微信已登录。
+    pause
+    exit /b 1
+)
+
+echo [*] db_storage: %DB_DIR%
+echo [*] python:     %PY%
+echo.
 
 echo [*] 1/3 提取密钥...
 "%PY%" vendor\wcdb-key-tool-main\wcdb_key_tool_windows.py extract --db-dir "%DB_DIR%" --output output\all_keys.json
@@ -30,7 +48,7 @@ echo [*] 3/3 导出聊天记录...
 echo.
 echo [+] 完成！
 echo     密钥: output\all_keys.json
-echo     数据库: decrypted\
+echo     数据库: output\decrypted\
 echo     聊天记录: output\messages.json
 echo     Web 查看: http://127.0.0.1:8787
 pause

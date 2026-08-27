@@ -1,6 +1,7 @@
 # Run once after closing Cursor/terminals using the old path.
 # Removes E:\workspace\wechat-reader if E:\workspace\wxlocal is the active clone.
 
+$ErrorActionPreference = "Stop"
 $legacy = "E:\workspace\wechat-reader"
 $current = "E:\workspace\wxlocal"
 
@@ -14,9 +15,16 @@ if (-not (Test-Path $legacy)) {
 }
 
 try {
-    Remove-Item -LiteralPath $legacy -Recurse -Force
-    Write-Host "[ok] Removed legacy folder: $legacy"
+    Remove-Item -LiteralPath $legacy -Recurse -Force -ErrorAction Stop
 } catch {
-    Write-Warning "Could not remove $legacy (still in use). Close Cursor and retry."
+    Write-Warning "Could not remove $legacy (files in use). Close Cursor/old daemons and retry."
+    Write-Warning $_.Exception.Message
     exit 1
 }
+
+if (Test-Path $legacy) {
+    Write-Warning "Legacy folder still exists: $legacy"
+    exit 1
+}
+
+Write-Host "[ok] Removed legacy folder: $legacy"

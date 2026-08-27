@@ -25,6 +25,19 @@ def _default_data_root() -> str:
     return ""
 
 
+def find_user_db_storage(data_root: str | Path | None = None) -> Path | None:
+    root = Path(data_root or DATA_ROOT)
+    if not root.is_dir():
+        return None
+    for name in os.listdir(root):
+        if name in ("all_users", "Backup"):
+            continue
+        db_storage = root / name / "db_storage"
+        if db_storage.is_dir():
+            return db_storage
+    return None
+
+
 DATA_ROOT = _default_data_root()
 OUTPUT_DIR = str(_OUTPUT_DIR)
 DECRYPTED_DIR = str(_DECRYPTED_DIR)

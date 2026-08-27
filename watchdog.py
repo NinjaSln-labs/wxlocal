@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import argparse
-import atexit
 import json
 import logging
 import os
@@ -16,7 +15,8 @@ import sys
 import time
 from pathlib import Path
 
-from config import DATA_ROOT, OUTPUT_DIR
+from config import DATA_ROOT, OUTPUT_DIR, find_user_db_storage
+from daemon_util import acquire_pid_lock, install_excepthook, setup_daemon_logging
 from export_contact import export_contact
 from paths import (
     WATCH_CONTACT,
@@ -40,99 +40,14 @@ PID_FILE = NINJASIN_STATE_DIR / "ninjasin_watch.pid"
 DEFAULT_INTERVAL = int(os.environ.get("WECHAT_WATCH_INTERVAL", "60"))
 WECHAT_WAIT_INTERVAL = 15
 
-_LOGGER: logging.Logger | None = None
-
-
-def _pid_running(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    return True
-
-
-def acquire_pid_lock() -> bool:
-    ensure_kb_dirs()
-    if PID_FILE.is_file():
-        try:
-            old_pid = int(PID_FILE.read_text(encoding="utf-8").strip())
-        except ValueError:
-            old_pid = 0
-        if _pid_running(old_pid):
-            return False
-    PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
-    atexit.register(release_pid_lock)
-    return True
-
-
-def release_pid_lock() -> None:
-    if not PID_FILE.is_file():
-        return
-    try:
-        if int(PID_FILE.read_text(encoding="utf-8").strip()) == os.getpid():
-            PID_FILE.unlink(missing_ok=True)
-    except (ValueError, OSError):
-        pass
-
 
 def setup_logging() -> logging.Logger:
-    global _LOGGER
-    if _LOGGER is not None:
-        return _LOGGER
-
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    ensure_kb_dirs()
-
-    logger = logging.getLogger("watchdog")
-    logger.setLevel(logging.INFO)
-    logger.propagate = False
-    if not logger.handlers:
-        fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-        for path in (LOG_FILE, NINJASIN_DAEMON_LOG):
-            try:
-                fh = logging.FileHandler(path, encoding="utf-8", delay=True)
-                fh.setFormatter(fmt)
-                logger.addHandler(fh)
-            except OSError:
-                pass
-        try:
-            eh = logging.FileHandler(NINJASIN_ERROR_LOG, encoding="utf-8", delay=True)
-            eh.setLevel(logging.ERROR)
-            eh.setFormatter(fmt)
-            logger.addHandler(eh)
-        except OSError:
-            pass
-        if sys.stdout is not None and getattr(sys.stdout, "write", None):
-            sh = logging.StreamHandler(sys.stdout)
-            sh.setFormatter(fmt)
-            logger.addHandler(sh)
-    _LOGGER = logger
-    return logger
-
-
-def _install_excepthook(logger: logging.Logger) -> None:
-    def _hook(exc_type, exc, tb):
-        if issubclass(exc_type, KeyboardInterrupt):
-            sys.__excepthook__(exc_type, exc, tb)
-            return
-        logger.critical("uncaught exception", exc_info=(exc_type, exc, tb))
-
-    sys.excepthook = _hook
-
-
-def find_user_db_storage(data_root: str) -> Path | None:
-    root = Path(data_root)
-    if not root.is_dir():
-        return None
-    for name in os.listdir(root):
-        if name in ("all_users", "Backup"):
-            continue
-        db_storage = root / name / "db_storage"
-        if db_storage.is_dir():
-            return db_storage
-    return None
+    return setup_daemon_logging(
+        "watchdog",
+        (LOG_FILE, NINJASIN_DAEMON_LOG),
+        error_log=NINJASIN_ERROR_LOG,
+        prepare=lambda: (os.makedirs(OUTPUT_DIR, exist_ok=True), ensure_kb_dirs()),
+    )
 
 
 def keys_file_valid(keys_path: Path, db_storage: Path) -> bool:
@@ -282,9 +197,9 @@ def main():
     args = parser.parse_args()
 
     logger = setup_logging()
-    _install_excepthook(logger)
+    install_excepthook(logger)
 
-    if not args.once and not acquire_pid_lock():
+    if not args.once and not acquire_pid_lock(PID_FILE, prepare=ensure_kb_dirs):
         logger.info("ninjasin-watch already running (pid file: %s)", PID_FILE)
         return
 
@@ -338,6 +253,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
-        if _LOGGER is not None:
-            _LOGGER.exception("watchdog fatal exit")
+        logging.getLogger("watchdog").exception("watchdog fatal exit")
         raise
