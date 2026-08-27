@@ -48,6 +48,6 @@ Legacy `WeChatReaderAutostart.vbs` / `wechat-reader.path` supported during migra
 
 ## Phase checklist
 
-- [x] Rename to wxlocal · ninjasin-labs
+- [x] Local folder renamed to `E:\workspace\wxlocal\`
 - [x] `git init`, push to github.com/NinjaSln-labs/wxlocal
 - [x] GitHub CI: compileall

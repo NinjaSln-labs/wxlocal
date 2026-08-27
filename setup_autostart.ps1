@@ -59,7 +59,7 @@ Register-ScheduledTask `
     -Trigger $trigger `
     -Settings $settings `
     -Principal $principal `
-    -Description "微信登录后自动同步聊天记录 (wechat-reader watchdog)"
+    -Description "wxlocal autostart: mp-scroll + chat-watch"
 
 Write-Host ""
 Write-Host "[+] 任务计划已创建！" -ForegroundColor Green
