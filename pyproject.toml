@@ -1,7 +1,7 @@
 [project]
 name = "wxlocal"
 version = "0.1.0"
-description = "Personal learning / research: read WeChat PC 4.x local data. No warranty. See DISCLAIMER.md."
+description = "wxlocal — Windows 微信 PC 本地数据采集（解密、订阅号 IndexedDB、联系人导出）。自学习/研究，见 DISCLAIMER。 | Windows tooling for WeChat PC local data: decrypt, mp-scroll, chat-watch."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"

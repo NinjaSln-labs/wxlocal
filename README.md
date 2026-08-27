@@ -1,21 +1,57 @@
+<div align="center">
+
 # wxlocal
 
-Read and export **WeChat PC 4.x** local data on Windows: decrypt chats, scroll the subscription feed (IndexedDB), optional chat-watch export.
+> **本地读微信，不必碰云端** · *Read WeChat PC locally*
+> Windows 开源工具：解密本地库 · 滑订阅号 IndexedDB · 单联系人自动导出。
 
-> **Maintained by [NinjaSin Labs](https://github.com/ninjasin-labs)** · self-learning / research only — see [DISCLAIMER](docs/DISCLAIMER.md).
+[![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Windows](https://img.shields.io/badge/Platform-Windows-0078D4)](docs/STANDALONE.md)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB)](pyproject.toml)
+[![Disclaimer](https://img.shields.io/badge/Disclaimer-required-orange)](docs/DISCLAIMER.md)
 
-> **Platform:** Windows · local `xwechat_files` only
+**[NinjaSln-labs](https://github.com/NinjaSln-labs)** · 姊妹仓 [qingfu-envoy](https://github.com/NinjaSln-labs/qingfu-envoy) · [jinteng](https://github.com/NinjaSln-labs/jinteng)
 
-## Features
+</div>
 
-| Module | Entry | What it does |
-|--------|-------|--------------|
-| **Core** | `run_extract.bat`, `app.py` | Decrypt local DB, export chats, Web UI |
-| **mp-scroll** | `watch_mp_idb.py` | Scroll subscription feed → URL registry → enrich |
-| **chat-watch** | `watchdog.py` | Auto-sync one contact when WeChat is logged in |
-| **mp-capture** | `run_mp_capture.py` | Optional mitmproxy capture |
+---
 
-## Quick start
+## 简介
+
+**wxlocal** — 读取微信 **PC 4.x** 本机 `xwechat_files`：解密聊天库、监听订阅号 IndexedDB、按联系人导出转发语料。数据默认留在本机与外置知识库目录。
+
+- **一句话目标**：登录微信后，后台静默跑两条管道——**滑订阅号** → URL 注册表 + 开发向过滤；**转发联系人** → 导出 JSON + 增量归档。
+- **全球定位对位**：大厂语料在云端；wxlocal 服务「**要自己掌控本地数据与归档规则**」的开发者——差异化 = **本机解密 × 可配置 KB 根目录 × 无弹窗 daemon**。
+- **边界**：自学习 / 研究工具，[免责声明必读](docs/DISCLAIMER.md)；**不是**腾讯官方 SDK，不承诺微信版本永久兼容。
+- **平台**：仅 **Windows**（内存密钥提取、Chromium IndexedDB 路径均依赖 PC 客户端）。
+
+## 当前状态
+
+| 域 | 状态 |
+|----|------|
+| Core 解密 + 导出 | ✅ `run_extract.bat` · `app.py` Web UI |
+| mp-scroll（IndexedDB） | ✅ `watch_mp_idb.py` · 登录自启 |
+| chat-watch（单联系人） | ✅ `watchdog.py` · delta 归档 |
+| mp-capture（可选） | ✅ mitmproxy addon |
+| 解密缓存路径 | ✅ 统一 `output/decrypted/` |
+| CI | ✅ Windows `compileall` |
+| 自动化测试 | ⏳ 计划中（pytest smoke） |
+
+**维护笔记：** [docs/STANDALONE.md](docs/STANDALONE.md)
+
+## 目录结构
+
+| 路径 | 内容 |
+|------|------|
+| `mp_capture/` | IndexedDB 解析 · 注册表 · 正文抓取 |
+| `watch_mp_idb.py` | mp-scroll daemon |
+| `watchdog.py` | chat-watch daemon |
+| `paths.py` / `config.py` | KB 布局 · `WECHAT_*` 环境变量 |
+| `vendor/wcdb-key-tool-main/` | SQLCipher 解密（MIT） |
+| `docs/` | DISCLAIMER · 运维 · 研究笔记 |
+| `output/` | 运行时（密钥缓存、日志、`decrypted/`，gitignore） |
+
+## 快速开始
 
 ```powershell
 git clone https://github.com/NinjaSln-labs/wxlocal.git
@@ -25,22 +61,57 @@ python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
 
 copy .env.example .env
-# Set WECHAT_DATA_ROOT
+# 必填：WECHAT_DATA_ROOT=D:\app\WeixinData\xwechat_files
 
 .\run_extract.bat
 ```
 
-## Configuration
+**登录自启（无弹窗）：**
 
-See [`.env.example`](.env.example). Knowledge-base exports go to `WECHAT_KB_ROOT` (default `./data/knowledge-base`).
+```powershell
+.\setup_wxlocal_autostart.bat
+.\status_wxlocal.bat
+```
 
-## Docs
+| 模块 | 入口 | 说明 |
+|------|------|------|
+| Core | `run_extract.bat` | 管理员提权 → 提取密钥 → 解密 → 导出 |
+| mp-scroll | `watch_mp_idb.py --once` | 单次扫描 IndexedDB |
+| chat-watch | `watchdog.py --once` | 单次同步指定联系人 |
+| Web UI | `run_web.bat` | http://127.0.0.1:8787 |
 
-- [docs/DISCLAIMER.md](docs/DISCLAIMER.md) — **required reading**
-- [docs/STANDALONE.md](docs/STANDALONE.md) — OSS layout
-- [docs/MP_CAPTURE.md](docs/MP_CAPTURE.md) — mitm / IDB
-- [docs/WECHAT_4.1.13_RESEARCH.md](docs/WECHAT_4.1.13_RESEARCH.md) — decryption notes
+## 配置
+
+| 变量 | 含义 |
+|------|------|
+| `WECHAT_DATA_ROOT` | `xwechat_files` 根目录（**必填**） |
+| `WECHAT_KB_ROOT` | 语料导出根（默认 `./data/knowledge-base`） |
+| `WECHAT_WATCH_CONTACT` | chat-watch 联系人昵称（默认 `FileTransfer`） |
+| `WXLOCAL_PYTHON` | 自启用 `pythonw` 路径 |
+| `WECHAT_FETCH_PROXY` | 正文抓取 HTTP 代理（可选） |
+
+分类 / 过滤规则可放在消费者 KB 的 `config/*.json`，见 [docs/STANDALONE.md](docs/STANDALONE.md)。
+
+## 文档
+
+| 文档 | 说明 |
+|------|------|
+| [DISCLAIMER](docs/DISCLAIMER.md) | **必读** — 自学习声明与合规提示 |
+| [STANDALONE](docs/STANDALONE.md) | OSS 布局 · 自启 · KB 契约 |
+| [MP_CAPTURE](docs/MP_CAPTURE.md) | mitm / IndexedDB 细节 |
+| [WECHAT_4.1.13_RESEARCH](docs/WECHAT_4.1.13_RESEARCH.md) | 4.x 解密调研笔记 |
+| [LOCAL_SETUP.example](docs/LOCAL_SETUP.example.md) | 维护者本地配置模板 |
+
+## 边界（刻意不做）
+
+不做：云端同步、多账号 SaaS、绕过微信 ToS 的「破解」宣传、保证正文 100% 抓取。  
+只做：读本机已落盘数据 + 可选代理补正文 + 可配置外置语料目录。
+
+## Git
+
+- 分支 `main`；PR 须在 Windows 下通过 `compileall`。
+- 密钥、`output/`、`.env` **永不提交**。
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Bundled [wcdb-key-tool](vendor/wcdb-key-tool-main/) (MIT).
+[MIT](LICENSE) © NinjaSln-labs · bundled [wcdb-key-tool](vendor/wcdb-key-tool-main/) (MIT)
