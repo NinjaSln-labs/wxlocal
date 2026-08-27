@@ -38,9 +38,9 @@ leveldb = ["plyvel-ci>=1.5.0"]
 dev = ["pytest>=8.0.0"]
 
 [project.urls]
-Homepage = "https://github.com/NinjaSln/wxlocal"
-Documentation = "https://github.com/NinjaSln/wxlocal/blob/main/docs/STANDALONE.md"
-Issues = "https://github.com/NinjaSln/wxlocal/issues"
+Homepage = "https://github.com/NinjaSln-labs/wxlocal"
+Documentation = "https://github.com/NinjaSln-labs/wxlocal/blob/main/docs/STANDALONE.md"
+Issues = "https://github.com/NinjaSln-labs/wxlocal/issues"
 
 [tool.setuptools.packages.find]
 include = ["mp_capture*"]
