@@ -9,12 +9,19 @@ from pathlib import Path
 
 import zstd
 
-from paths import EXPORTS_DIR, OUTPUT_DIR, WATCH_CONTACT, ensure_kb_dirs
+from paths import EXPORTS_DIR, WATCH_CONTACT, ensure_decrypted_dir, ensure_kb_dirs
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DECRYPTED_DIR = PROJECT_ROOT / "decrypted"
-MSG_DB = DECRYPTED_DIR / "message" / "message_0.db"
-CONTACT_DB = DECRYPTED_DIR / "contact" / "contact.db"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+
+
+def _decrypted_paths() -> tuple[Path, Path, Path]:
+    root = ensure_decrypted_dir()
+    return (
+        root / "message" / "message_0.db",
+        root / "contact" / "contact.db",
+        root / "session" / "session.db",
+    )
 
 
 def decompress(data):
@@ -33,7 +40,8 @@ def decompress(data):
 
 
 def find_contact(name: str) -> tuple[str, str]:
-    conn = sqlite3.connect(str(CONTACT_DB))
+    _, contact_db, _ = _decrypted_paths()
+    conn = sqlite3.connect(str(contact_db))
     cols = [r[1] for r in conn.execute("PRAGMA table_info(contact)")]
     for row in conn.execute("SELECT * FROM contact"):
         d = dict(zip(cols, row))
@@ -46,10 +54,11 @@ def find_contact(name: str) -> tuple[str, str]:
 
 
 def export_contact(name: str, limit: int = 0) -> dict:
+    msg_db, contact_db, _ = _decrypted_paths()
     username, nick = find_contact(name)
     print(f"[+] 联系人: {nick} ({username})")
 
-    conn = sqlite3.connect(str(MSG_DB))
+    conn = sqlite3.connect(str(msg_db))
     tables = [r[0] for r in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'Msg_%'"
     )]
@@ -78,8 +87,8 @@ def export_contact(name: str, limit: int = 0) -> dict:
     print(f"[+] 消息表: {target_table}")
 
     contacts = {}
-    if CONTACT_DB.is_file():
-        cconn = sqlite3.connect(str(CONTACT_DB))
+    if contact_db.is_file():
+        cconn = sqlite3.connect(str(contact_db))
         contacts = {r[0]: r[1] for r in cconn.execute("SELECT username, nick_name FROM contact") if r[1]}
         cconn.close()
 

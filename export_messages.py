@@ -3,17 +3,15 @@ import json
 import os
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
 import zstd
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DECRYPTED_DIR = PROJECT_ROOT / "decrypted"
-OUTPUT_DIR = PROJECT_ROOT / "output"
+from paths import OUTPUT_DIR, ensure_decrypted_dir
 
-MSG_DB = DECRYPTED_DIR / "message" / "message_0.db"
-SESSION_DB = DECRYPTED_DIR / "session" / "session.db"
-CONTACT_DB = DECRYPTED_DIR / "contact" / "contact.db"
+_d = ensure_decrypted_dir()
+MSG_DB = _d / "message" / "message_0.db"
+SESSION_DB = _d / "session" / "session.db"
+CONTACT_DB = _d / "contact" / "contact.db"
 OUT = OUTPUT_DIR / "messages.json"
 
 

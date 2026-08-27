@@ -28,12 +28,12 @@ if hasattr(sys.stdout, "reconfigure"):
 
 from mp_capture.body_extract import extract_body_from_html
 from mp_dev_filter import is_dev_related
-from paths import MP_DEV_ARCHIVE, MP_DEV_EXPORT, MP_DEV_KB, ensure_mp_dev_dirs
+from paths import MP_DEV_ARCHIVE, MP_DEV_EXPORT, MP_DEV_KB, ensure_decrypted_dir, ensure_mp_dev_dirs
 
-ROOT = Path(__file__).resolve().parent
-BIZ_DB = ROOT / "decrypted/message/biz_message_0.db"
-CONTACT_DB = ROOT / "decrypted/contact/contact.db"
-SESSION_DB = ROOT / "decrypted/session/session.db"
+_d = ensure_decrypted_dir()
+BIZ_DB = _d / "message" / "biz_message_0.db"
+CONTACT_DB = _d / "contact" / "contact.db"
+SESSION_DB = _d / "session" / "session.db"
 
 UA = (
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "

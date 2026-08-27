@@ -22,7 +22,7 @@ if %errorlevel% neq 0 (
 )
 
 echo [*] 2/3 解密数据库...
-"%PY%" vendor\wcdb-key-tool-main\wcdb_key_tool_windows.py decrypt --keys output\all_keys.json --output decrypted
+"%PY%" vendor\wcdb-key-tool-main\wcdb_key_tool_windows.py decrypt --keys output\all_keys.json --output output\decrypted
 
 echo [*] 3/3 导出聊天记录...
 "%VPY%" export_messages.py

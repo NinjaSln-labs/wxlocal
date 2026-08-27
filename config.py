@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 
 from env_loader import load_env
+from paths import DECRYPTED_DIR as _DECRYPTED_DIR
+from paths import OUTPUT_DIR as _OUTPUT_DIR
 
 load_env()
 
@@ -24,5 +26,5 @@ def _default_data_root() -> str:
 
 
 DATA_ROOT = _default_data_root()
-OUTPUT_DIR = os.path.join(_ROOT, "output")
-DECRYPTED_DIR = os.path.join(OUTPUT_DIR, "decrypted")
+OUTPUT_DIR = str(_OUTPUT_DIR)
+DECRYPTED_DIR = str(_DECRYPTED_DIR)

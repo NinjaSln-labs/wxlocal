@@ -23,15 +23,16 @@ from paths import (
     NINJASIN_DAEMON_LOG,
     NINJASIN_ERROR_LOG,
     NINJASIN_STATE_DIR,
+    OUTPUT_DIR as OUTPUT_ROOT,
+    ensure_decrypted_dir,
     ensure_kb_dirs,
 )
 from scan_keys_v41 import find_weixin_pid
 from wcdb_bridge import run_decrypt, run_extract
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-KEYS_FILE = PROJECT_ROOT / "output" / "all_keys.json"
-DECRYPTED_DIR = PROJECT_ROOT / "decrypted"
-LOG_FILE = PROJECT_ROOT / "output" / "daemon.log"
+KEYS_FILE = OUTPUT_ROOT / "all_keys.json"
+LOG_FILE = OUTPUT_ROOT / "daemon.log"
 WCDB_TOOL = PROJECT_ROOT / "vendor" / "wcdb-key-tool-main" / "wcdb_key_tool_windows.py"
 DELTA_SCRIPT = PROJECT_ROOT / "archive_ninjasin_delta.py"
 PID_FILE = NINJASIN_STATE_DIR / "ninjasin_watch.pid"
@@ -183,9 +184,10 @@ def run_wcdb_decrypt(logger: logging.Logger) -> bool:
         return False
 
     logger.info("开始解密数据库 (wcdb in-process)...")
-    if not run_decrypt(db_storage, DECRYPTED_DIR, KEYS_FILE, logger):
+    decrypted_dir = ensure_decrypted_dir()
+    if not run_decrypt(db_storage, decrypted_dir, KEYS_FILE, logger):
         return False
-    logger.info("解密完成 -> %s", DECRYPTED_DIR)
+    logger.info("解密完成 -> %s", decrypted_dir)
     return True
 
 
