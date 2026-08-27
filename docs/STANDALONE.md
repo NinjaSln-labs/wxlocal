@@ -1,7 +1,7 @@
 # wxlocal · OSS maintenance notes
 
-> **GitHub:** [github.com/ninjasin-labs/wxlocal](https://github.com/ninjasin-labs/wxlocal)  
-> **Org:** [NinjaSin Labs](https://github.com/ninjasin-labs)
+> **GitHub:** [github.com/NinjaSln/wxlocal](https://github.com/NinjaSln/wxlocal)  
+> **Org:** NinjaSin Labs (repo under [NinjaSln](https://github.com/NinjaSln) until `ninjasin-labs` org exists)
 
 ## What this project is
 
@@ -49,5 +49,5 @@ Legacy `WeChatReaderAutostart.vbs` / `wechat-reader.path` supported during migra
 ## Phase checklist
 
 - [x] Rename to wxlocal · ninjasin-labs
-- [ ] `git init`, push to github.com/ninjasin-labs/wxlocal
-- [ ] GitHub CI: compileall
+- [x] `git init`, push to github.com/NinjaSln/wxlocal
+- [x] GitHub CI: compileall

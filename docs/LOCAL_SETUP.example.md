@@ -7,6 +7,6 @@ WECHAT_WATCH_CONTACT=NinjaSin
 WXLOCAL_PYTHON=E:\Python312\pythonw.exe
 ```
 
-Repo clone path may still be `E:\workspace\wechat-reader\` until renamed. Upstream: https://github.com/ninjasin-labs/wxlocal
+Repo clone path may still be `E:\workspace\wechat-reader\` until renamed. Upstream: https://github.com/NinjaSln/wxlocal
 
 Autostart: `.\setup_wxlocal_autostart.bat` → Startup `WxLocalAutostart.vbs` + `wxlocal.path`

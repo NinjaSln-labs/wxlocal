@@ -18,7 +18,7 @@ Read and export **WeChat PC 4.x** local data on Windows: decrypt chats, scroll t
 ## Quick start
 
 ```powershell
-git clone https://github.com/ninjasin-labs/wxlocal.git
+git clone https://github.com/NinjaSln/wxlocal.git
 cd wxlocal
 
 python -m venv .venv
