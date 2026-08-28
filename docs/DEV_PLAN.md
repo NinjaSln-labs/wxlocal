@@ -71,7 +71,7 @@ T4 doc links OK
 |----|------|------|
 | C1 daemon 公共逻辑抽取 | ✅ | `daemon_util.py` · T1–T3 通过 |
 | C2 `run_extract.bat` 去硬编码 | ✅ | `.env` + `scripts/resolve_db_storage.py` |
-| C3 清理 legacy `wechat-reader` 目录 | ⚠️ | 脚本已加固；`.venv` 被占用时需关 Cursor 后重跑 |
+| C3 清理 legacy `wechat-reader` 目录 | ✅ | `E:\workspace\wechat-reader` 已删（2026-08-28） |
 
 ---
 
