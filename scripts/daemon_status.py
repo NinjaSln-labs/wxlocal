@@ -98,7 +98,7 @@ def _format_daemon(name: str, pid_file: Path, pattern: str, *legacy_pid: Path) -
 
 
 def stop_pipelines(only: str = "all") -> None:
-    from subprocess_win import kill_processes_matching
+    from wxlocal.core.subprocess_win import kill_processes_matching
 
     names = list(_PIPELINES) if only in ("all", "") else [only]
     for name in names:

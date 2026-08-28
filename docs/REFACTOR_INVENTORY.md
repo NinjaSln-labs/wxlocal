@@ -29,12 +29,12 @@
 
 | 文件 | 目标 | 阶段 |
 |------|------|------|
-| `wcdb_bridge.py` | `wxlocal/core/wcdb.py` | R7 📦 |
-| `scan_keys_v41.py` | `wxlocal/core/keys.py` | R7 📦 |
-| `decrypt_db.py` | `wxlocal/core/decrypt.py` | R7 📦 |
-| `read_messages.py` | `wxlocal/core/messages.py` | R7 📦 |
-| `key_parser.py` | `wxlocal/core/key_parser.py` | R7 📦 |
-| `subprocess_win.py` | `wxlocal/core/subprocess_win.py` | R7 📦 |
+| `wcdb_bridge.py` 🔀 | `wxlocal/core/wcdb.py` | R7 ✅ |
+| `scan_keys_v41.py` 🔀 | `wxlocal/core/keys.py` | R7 ✅ |
+| `decrypt_db.py` 🔀 | `wxlocal/core/decrypt.py` | R7 ✅ |
+| `read_messages.py` 🔀 | `wxlocal/core/messages.py` | R7 ✅ |
+| `key_parser.py` 🔀 | `wxlocal/core/key_parser.py` | R7 ✅ |
+| `subprocess_win.py` 🔀 | `wxlocal/core/subprocess_win.py` | R7 ✅ |
 
 ---
 

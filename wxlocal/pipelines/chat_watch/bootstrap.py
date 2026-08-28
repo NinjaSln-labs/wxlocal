@@ -19,8 +19,8 @@ bootstrap_legacy_imports()
 def main() -> None:
     from autostart_util import append_autostart_log
     from env_loader import load_env
-    from subprocess_win import kill_processes_matching
 
+    from wxlocal.core.subprocess_win import kill_processes_matching
     from wxlocal.pipelines.chat_watch.daemon import main as daemon_main
 
     load_env()

@@ -20,8 +20,6 @@ from wxlocal._legacy import bootstrap_legacy_imports
 bootstrap_legacy_imports()
 
 from export_contact import export_contact
-from scan_keys_v41 import find_weixin_pid
-from wcdb_bridge import run_decrypt, run_extract
 
 from wxlocal.config._root import PROJECT_ROOT
 from wxlocal.config.config import DATA_ROOT, OUTPUT_DIR, find_user_db_storage
@@ -35,6 +33,8 @@ from wxlocal.config.paths import (
     ensure_decrypted_dir,
     ensure_kb_dirs,
 )
+from wxlocal.core.keys import find_weixin_pid
+from wxlocal.core.wcdb import run_decrypt, run_extract
 from wxlocal.shared.daemon import acquire_pid_lock, install_excepthook, setup_daemon_logging
 
 KEYS_FILE = OUTPUT_ROOT / "all_keys.json"

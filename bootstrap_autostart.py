@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from autostart_util import append_autostart_log, resolve_pythonw, wait_for_paths
-from subprocess_win import CREATE_NO_WINDOW
+from wxlocal.core.subprocess_win import CREATE_NO_WINDOW
 
 _BOOTSTRAPS = ("bootstrap_mp_scroll.py", "bootstrap_chat_watch.py")
 

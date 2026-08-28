@@ -43,7 +43,7 @@ DEV_HINTS = ("Agent", "AI", "GitHub", "开源", "Claude", "MCP", "Skill", "渗�
 def _weixin_pids() -> set[int]:
     pids: set[int] = set()
     try:
-        from subprocess_win import run_silent
+        from wxlocal.core.subprocess_win import run_silent
 
         out = run_silent(
             ["tasklist", "/FI", "IMAGENAME eq Weixin.exe", "/FO", "CSV", "/NH"],

@@ -152,32 +152,11 @@ wxlocal/
 
 ---
 
-### R7 — core 层包化（2–3 天）
+### R7 — core 层包化（2–3 天）✅
 
-**目标**：解密/读库/密钥提取进 `wxlocal.core`；去掉 `_legacy` 对 core 的依赖。
-
-| 迁移动作 | 源 | 目标 |
-|----------|-----|------|
-| WCDB 桥 | `wcdb_bridge.py` | `wxlocal/core/wcdb.py` |
-| 密钥扫描 | `scan_keys_v41.py` | `wxlocal/core/keys.py` |
-| 解密 | `decrypt_db.py` | `wxlocal/core/decrypt.py` |
-| 读消息 | `read_messages.py` | `wxlocal/core/messages.py` |
-| 密钥解析 | `key_parser.py` | `wxlocal/core/key_parser.py` |
-| Windows 子进程 | `subprocess_win.py` | `wxlocal/core/subprocess_win.py` |
-
-| 后续 | |
-|------|--|
-| 根目录 | 每个文件留 shim 1 release |
-| `wxlocal/web/service.py` | 改 import `wxlocal.core.*` |
-| `wxlocal/export/cli.py` | 同上 |
-| `wxlocal/pipelines/chat_watch/daemon.py` | 同上；可移除部分 `bootstrap_legacy_imports()` |
-| `tests/test_core_imports.py` | 新增 |
-
-**验收**：
-
-- [ ] `wxlocal-watch --once` 不依赖 repo root on sys.path（仅 core 路径）  
-- [ ] T1 compileall 改为 `wxlocal mp_capture`  
-- [ ] pytest 全绿  
+- `wxlocal/core/{wcdb,keys,decrypt,messages,key_parser,subprocess_win}.py`
+- 根目录对应文件保留 shim；`web`/`export`/`pipelines` 已改 `wxlocal.core.*`
+- `tests/test_core_imports.py`；chat-watch 仍需 `_legacy` 仅因 `export_contact`（R8）
 
 ---
 

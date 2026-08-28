@@ -2,16 +2,11 @@
 import os
 from dataclasses import dataclass, field
 
-from wxlocal._legacy import bootstrap_legacy_imports
-
-bootstrap_legacy_imports()
-
-from decrypt_db import decrypt_with_fallback
-from key_parser import parse_key_input
-from read_messages import read_messages, read_sessions
-from scan_keys_v41 import find_weixin_pid, scan_passphrase, try_passphrase
-
 from wxlocal.config.config import DATA_ROOT, DECRYPTED_DIR, OUTPUT_DIR
+from wxlocal.core.decrypt import decrypt_with_fallback
+from wxlocal.core.key_parser import parse_key_input
+from wxlocal.core.keys import find_weixin_pid, scan_passphrase, try_passphrase
+from wxlocal.core.messages import read_messages, read_sessions
 
 
 @dataclass

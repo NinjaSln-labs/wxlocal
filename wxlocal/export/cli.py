@@ -3,15 +3,9 @@ import argparse
 import os
 import sys
 
-from wxlocal._legacy import bootstrap_legacy_imports
-
-bootstrap_legacy_imports()
-
-from decrypt_db import copy_and_decrypt
-from read_messages import export_json, read_messages, read_sessions
-from scan_keys_v41 import find_weixin_pid, scan_passphrase
-
 from wxlocal.config.config import DATA_ROOT, DECRYPTED_DIR, OUTPUT_DIR
+from wxlocal.core.keys import copy_and_decrypt, find_weixin_pid, scan_passphrase
+from wxlocal.core.messages import export_json, read_messages, read_sessions
 
 
 def find_user_dir(data_root: str) -> str:
