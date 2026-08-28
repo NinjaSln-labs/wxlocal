@@ -129,8 +129,9 @@ def run_chat_watch_delta_archive(logger: logging.Logger) -> bool:
 
         stats = archive_delta_main()
         logger.info(
-            "chat-watch 增量归档: net_new=%s dups_skipped=%s parsed=%s",
+            "chat-watch 增量归档: round_new=%s day_total=%s dups_skipped=%s parsed=%s",
             stats.get("net_new"),
+            stats.get("day_total"),
             stats.get("dups"),
             stats.get("parsed"),
         )

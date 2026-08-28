@@ -132,13 +132,35 @@ def main() -> dict[str, int | str]:
     known = load_known_keys()
     parsed_count = len(items)
     net_new, dups = split_new_items(items, known)
-    for i, it in enumerate(net_new, 1):
-        it["index"] = i
-    items = net_new
 
     stamp = datetime.now().strftime("%Y-%m-%d")
     batch_dir = ARCHIVE_ROOT / f"{stamp}-delta"
     batch_dir.mkdir(parents=True, exist_ok=True)
+
+    # Same-day merge: do not wipe earlier net_new when a later poll finds only dups.
+    existing_items: list[dict] = []
+    delta_json = batch_dir / "delta.json"
+    if delta_json.is_file():
+        try:
+            prev_payload = json.loads(delta_json.read_text(encoding="utf-8"))
+            raw_prev = prev_payload.get("items", [])
+            if isinstance(raw_prev, list):
+                existing_items = [it for it in raw_prev if isinstance(it, dict)]
+        except (json.JSONDecodeError, OSError):
+            existing_items = []
+
+    merged: list[dict] = []
+    seen_keys: set[str] = set()
+    for it in existing_items + net_new:
+        key = dedup_key(it)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        merged.append(it)
+    for i, it in enumerate(merged, 1):
+        it["index"] = i
+    items = merged
+    round_new = len(net_new)
 
     by_cat: dict[str, list] = defaultdict(list)
     for it in items:
@@ -155,13 +177,14 @@ def main() -> dict[str, int | str]:
             "message_count_new": len(new_msgs),
             "item_count": len(items),
             "item_count_parsed": parsed_count,
+            "item_count_round_new": round_new,
             "duplicates_skipped": len(dups),
             "categories": {k: len(v) for k, v in sorted(by_cat.items(), key=lambda x: -len(x[1]))},
         },
         "items": items,
         "by_category": dict(by_cat),
     }
-    (batch_dir / "delta.json").write_text(
+    delta_json.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
@@ -171,7 +194,7 @@ def main() -> dict[str, int | str]:
         "",
         f"- 截止点（不含）: `{CUTOFF}`（此前合并转发 90 条已归档）",
         f"- 导出总消息: {len(msgs)}",
-        f"- 增量消息: {len(new_msgs)} → 可解析 **{parsed_count}** → 去重后 **{len(items)}**（跳过重复 {len(dups)}）",
+        f"- 增量消息: {len(new_msgs)} → 可解析 **{parsed_count}** → 本轮新增 **{round_new}** → 日累计 **{len(items)}**（跳过重复 {len(dups)}）",
         f"- 分类数: {len(by_cat)}",
         "",
         "## 分类一览",
@@ -201,7 +224,7 @@ def main() -> dict[str, int | str]:
         prev = index_path.read_text(encoding="utf-8")
     entry = (
         f"| {stamp} | `{batch_dir.name}` | {len(items)} | "
-        f"去重后新增 {len(items)}；跳过重复 {len(dups)} |\n"
+        f"日累计 {len(items)}（本轮 +{round_new}；跳过重复 {len(dups)}） |\n"
     )
     index_title = f"{WATCH_CONTACT} 归档索引"
     if index_title not in prev:
@@ -220,21 +243,25 @@ def main() -> dict[str, int | str]:
         prev = prev.rstrip() + "\n" + entry
     index_path.write_text(prev, encoding="utf-8")
 
-    register_keys(items, known)
+    register_keys(net_new, known)
 
     # Manifest pointer for latest
     (ARCHIVE_ROOT / "LATEST.txt").write_text(
-        f"{batch_dir.as_posix()}\nitems={len(items)}\ndups_skipped={len(dups)}\n",
+        f"{batch_dir.as_posix()}\nitems={len(items)}\nround_new={round_new}\ndups_skipped={len(dups)}\n",
         encoding="utf-8",
     )
 
-    print(f"new_msgs={len(new_msgs)} parsed={parsed_count} net_new={len(items)} dups={len(dups)}")
+    print(
+        f"new_msgs={len(new_msgs)} parsed={parsed_count} "
+        f"round_new={round_new} day_total={len(items)} dups={len(dups)}"
+    )
     print(f"archive={batch_dir}")
     for k, v in sorted(by_cat.items(), key=lambda x: -len(x[1])):
         print(f"  {k}: {len(v)}")
     return {
         "parsed": parsed_count,
-        "net_new": len(items),
+        "net_new": round_new,
+        "day_total": len(items),
         "dups": len(dups),
         "archive": str(batch_dir),
     }
