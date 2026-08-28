@@ -14,7 +14,11 @@ def load_env(env_path: Path | None = None) -> None:
     global _LOADED
     if _LOADED:
         return
-    path = env_path or ROOT / ".env"
+    if env_path is None:
+        override = os.environ.get("WXLOCAL_ENV_FILE", "").strip()
+        path = Path(override) if override else ROOT / ".env"
+    else:
+        path = env_path
     if not path.is_file():
         _LOADED = True
         return

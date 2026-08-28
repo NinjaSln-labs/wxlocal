@@ -7,13 +7,18 @@
 
 ## 验证门禁（每次提交前必跑）
 
-| # | 命令 | 通过标准 |
-|---|------|----------|
-| T1 | `python -m compileall -q mp_capture paths.py config.py env_loader.py watchdog.py watch_mp_idb.py` | exit 0 |
-| T2 | `python watchdog.py --once` | exit 0；解密目录为 `output/decrypted` |
-| T3 | `python watch_mp_idb.py --once` | exit 0；写出 dev export |
-| T4 | README 文档链接 | `docs/*.md` 所列文件均存在 |
-| T5 | `pytest tests/`（待建） | exit 0；无网络/无微信进程依赖 |
+| # | 命令 | 通过标准 | 备注 |
+|---|------|----------|------|
+| T1 | `compileall` wxlocal + shims | exit 0 | |
+| T5 | `pytest tests/` | exit 0 | **含 T0 同类：子进程 + 临时 `.env` 绑定断言** |
+| T0 | `python scripts/check_env_binding.py` | exit 0 | 无微信；防 `load_env` 晚于常量绑定 |
+| T2 | `wxlocal-watch --once` | exit 0 | 动 pipeline/config/**必跑**，勿长期 Skip |
+| T3 | `wxlocal-mp-scroll --once` | exit 0 | 同上 |
+| T4 | docs 链接存在 | exit 0 | |
+
+一键：`.\scripts\verify.ps1`（`-SkipIntegration` 仅跳过 T2/T3，**不跳过 T0**）。
+
+**R5 教训**：只跑 pytest 同进程断言挡不住「import 时读 env」回归；配置/paths 改动必须有**新进程 + 假 `.env`** 探针（现为 T0 / `tests/test_env_load_order.py`）。
 
 **2026-08-27 记录（README + About）：**
 

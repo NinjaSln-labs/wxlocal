@@ -19,3 +19,5 @@ jobs:
         run: python -m compileall -q wxlocal mp_capture autostart_util.py daemon_util.py paths.py config.py env_loader.py bootstrap_autostart.py watchdog.py watch_mp_idb.py
       - name: Run smoke tests
         run: pytest tests/ -q
+      - name: Env binding (fresh process)
+        run: python scripts/check_env_binding.py
