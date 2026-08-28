@@ -40,6 +40,10 @@ REMOVED_LEGACY = [
     "watchdog.py",
     "watch_mp_idb.py",
     "reset_mp_scroll.bat",
+    "run.bat",
+    "run-elevated.bat",
+    "Run-AsAdmin.ps1",
+    "Read-WeChatChats.ps1",
 ]
 
 
@@ -56,6 +60,16 @@ def test_removed_legacy_launchers_gone():
 def test_root_has_no_python_files():
     root_py = sorted(p.name for p in ROOT.glob("*.py"))
     assert root_py == [], f"root .py should be empty, found: {root_py}"
+
+
+def test_root_launcher_budget():
+    bats = sorted(p.name for p in ROOT.glob("*.bat"))
+    vbs = sorted(p.name for p in ROOT.glob("*.vbs"))
+    assert len(bats) + len(vbs) <= 12, f"too many root launchers: {bats + vbs}"
+    assert "run_extract.bat" in bats
+    assert "run.bat" not in bats
+    assert not (ROOT / "Read-WeChatChats.ps1").exists()
+    assert (ROOT / "scripts" / "legacy" / "Read-WeChatChats.ps1").is_file()
 
 
 def test_stop_wxlocal_uses_daemon_status():

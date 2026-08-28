@@ -68,7 +68,6 @@ wxlocal/                          # 仅保留用户-facing 入口
 ├── WxLocalAutostart.vbs
 │
 ├── wxlocal/                      # 全部 Python 实现
-├── mp_capture/                   # （R9 可选并入 wxlocal）
 ├── launchers/win/
 ├── scripts/ops/ + scripts/research/ + scripts/legacy/
 ├── vendor/

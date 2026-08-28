@@ -9,6 +9,10 @@ Moved from repo root during refactor. Not part of the public pipeline.
 | One-offs | `fetch_full_content.py`, `parse_merged.py`, `find_contact.py` |
 | Scratch | `_check_*.py`, `_print_*.py`, `_sample_*.py` |
 
-Production entry points (v0.2.0+): console scripts / `python -m wxlocal…` — see [CHANGELOG.md](../../CHANGELOG.md).
+Production entry points (v0.2.0+): console scripts / `python -m wxlocal…` / root `run_*.bat` — see [CHANGELOG.md](../../CHANGELOG.md).
+
+Legacy standalone PowerShell extract (superseded by `run_extract.bat` / `wxlocal-export`):
+
+- `Read-WeChatChats.ps1`
 
 Recover deleted local scripts from git history if needed.

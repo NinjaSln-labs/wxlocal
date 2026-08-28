@@ -28,6 +28,11 @@ Breaking cleanup of the repo root: all Python lives under `wxlocal/` (and `scrip
 
 ### Keep
 
-- Root `.bat` / `.vbs` / `.ps1` launchers
+- Root `.bat` / `.vbs` launchers (canonical set; see `docs/REFACTOR_INVENTORY.md`)
 - `scripts/ops/` maintenance tools
 - Optional OCR extra: `pip install "wxlocal[ocr]"`
+
+### 0.2.0+ launcher trim
+
+- Removed redundant `run.bat` / `run-elevated.bat` / `Run-AsAdmin.ps1` (use `run_extract.bat`)
+- Moved `Read-WeChatChats.ps1` → `scripts/legacy/`
