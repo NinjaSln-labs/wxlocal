@@ -31,6 +31,8 @@ def test_migrate_pid_file_renames_legacy(tmp_path: Path):
 
 
 def test_acquire_pid_lock_migrates_legacy(tmp_path: Path):
+    from wxlocal.shared.daemon import release_pid_lock
+
     canonical = tmp_path / "mp_scroll.pid"
     legacy = tmp_path / "mp_idb_watch.pid"
     legacy.write_text("99999", encoding="utf-8")
@@ -38,3 +40,4 @@ def test_acquire_pid_lock_migrates_legacy(tmp_path: Path):
     assert acquire_pid_lock(canonical, legacy_pid_files=(legacy,)) is True
     assert canonical.is_file()
     assert not legacy.exists()
+    release_pid_lock(canonical)

@@ -12,8 +12,31 @@ _LOGGERS: dict[str, logging.Logger] = {}
 
 
 def pid_running(pid: int) -> bool:
+    """Return True if a process with the given PID appears to be alive.
+
+    On Windows, do **not** use ``os.kill(pid, 0)``: calling it on the current
+    process and then on a dead PID can leave a pending KeyboardInterrupt that
+    later surfaces inside ``pathlib.Path.mkdir(exist_ok=True)`` (breaks pytest/CI).
+    """
     if pid <= 0:
         return False
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, wintypes.DWORD(pid))
+        if not handle:
+            return False
+        try:
+            exit_code = wintypes.DWORD()
+            if kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0:
+                return False
+            return exit_code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
     try:
         os.kill(pid, 0)
     except OSError:
@@ -68,6 +91,10 @@ def acquire_pid_lock(
 
 
 def release_pid_lock(pid_file: Path) -> None:
+    try:
+        atexit.unregister(release_pid_lock)
+    except Exception:
+        pass
     if not pid_file.is_file():
         return
     try:
