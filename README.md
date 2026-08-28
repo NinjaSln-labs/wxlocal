@@ -10,7 +10,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB)](pyproject.toml)
 [![Disclaimer](https://img.shields.io/badge/Disclaimer-required-orange)](docs/DISCLAIMER.md)
 
-**[NinjaSln-labs](https://github.com/NinjaSln-labs)** · 姊妹仓 [qingfu-envoy](https://github.com/NinjaSln-labs/qingfu-envoy) · [jinteng](https://github.com/NinjaSln-labs/jinteng)
+**[github.com/NinjaSln-labs/wxlocal](https://github.com/NinjaSln-labs/wxlocal)**
 
 </div>
 
@@ -21,7 +21,6 @@
 **wxlocal** — 读取微信 **PC 4.x** 本机 `xwechat_files`：解密聊天库、监听订阅号 IndexedDB、按联系人导出转发语料。数据默认留在本机与外置知识库目录。
 
 - **一句话目标**：登录微信后，后台静默跑两条管道——**滑订阅号** → URL 注册表 + 开发向过滤；**转发联系人** → 导出 JSON + 增量归档。
-- **全球定位对位**：大厂语料在云端；wxlocal 服务「**要自己掌控本地数据与归档规则**」的开发者——差异化 = **本机解密 × 可配置 KB 根目录 × 无弹窗 daemon**。
 - **边界**：自学习 / 研究工具，[免责声明必读](docs/DISCLAIMER.md)；**不是**腾讯官方 SDK，不承诺微信版本永久兼容。
 - **平台**：仅 **Windows**（内存密钥提取、Chromium IndexedDB 路径均依赖 PC 客户端）。
 
@@ -29,26 +28,25 @@
 
 | 域 | 状态 |
 |----|------|
-| Core 解密 + 导出 | ✅ `run_extract.bat` · `app.py` Web UI |
-| mp-scroll（IndexedDB） | ✅ `watch_mp_idb.py` · 登录自启 |
-| chat-watch（单联系人） | ✅ `watchdog.py` · delta 归档 |
+| Core 解密 + 导出 | ✅ `run_extract.bat` · `wxlocal-export` · Web UI |
+| mp-scroll（IndexedDB） | ✅ `run_mp_scroll.bat` · `wxlocal-mp-scroll` · 登录自启 |
+| chat-watch（单联系人） | ✅ `run_chat_watch.bat` · `wxlocal-watch` · delta 归档 |
 | mp-capture（可选） | ✅ mitmproxy addon |
 | 解密缓存路径 | ✅ 统一 `output/decrypted/` |
 | CI | ✅ compileall + pytest smoke |
-| 自动化测试 | ✅ `tests/` smoke · `scripts/verify.ps1` |
+| 验证 | ✅ `scripts/verify.ps1` |
 
-**维护笔记：** [docs/STANDALONE.md](docs/STANDALONE.md)
+**维护笔记：** [docs/STANDALONE.md](docs/STANDALONE.md) · **架构：** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 目录结构
 
 | 路径 | 内容 |
 |------|------|
+| `wxlocal/` | 可安装包：`config` · `pipelines` · `shared` · `web` · `export` |
 | `mp_capture/` | IndexedDB 解析 · 注册表 · 正文抓取 |
-| `watch_mp_idb.py` | mp-scroll daemon |
-| `watchdog.py` | chat-watch daemon |
-| `paths.py` / `config.py` | KB 布局 · `WECHAT_*` 环境变量 |
+| `launchers/win/` | 统一 VBS 启动器 |
 | `vendor/wcdb-key-tool-main/` | SQLCipher 解密（MIT） |
-| `docs/` | DISCLAIMER · 运维 · 研究笔记 |
+| `docs/` | DISCLAIMER · 运维 · 架构 |
 | `output/` | 运行时（密钥缓存、日志、`decrypted/`，gitignore） |
 
 ## 快速开始
@@ -58,12 +56,21 @@ git clone https://github.com/NinjaSln-labs/wxlocal.git
 cd wxlocal
 
 python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
+.\.venv\Scripts\pip install -e ".[dev]"
 
 copy .env.example .env
 # 必填：WECHAT_DATA_ROOT=D:\app\WeixinData\xwechat_files
 
 .\run_extract.bat
+```
+
+**Daemon（推荐）：**
+
+```powershell
+.\run_chat_watch.bat          # 或 wxlocal-watch
+.\run_mp_scroll.bat           # 或 wxlocal-mp-scroll
+.\status_wxlocal.bat
+.\stop_wxlocal.bat
 ```
 
 **登录自启（无弹窗）：**
@@ -76,9 +83,9 @@ copy .env.example .env
 | 模块 | 入口 | 说明 |
 |------|------|------|
 | Core | `run_extract.bat` | 管理员提权 → 提取密钥 → 解密 → 导出 |
-| mp-scroll | `watch_mp_idb.py --once` | 单次扫描 IndexedDB |
-| chat-watch | `watchdog.py --once` | 单次同步指定联系人 |
-| Web UI | `run_web.bat` | http://127.0.0.1:8787 |
+| mp-scroll | `wxlocal-mp-scroll --once` | 单次扫描 IndexedDB |
+| chat-watch | `wxlocal-watch --once` | 单次同步指定联系人 |
+| Web UI | `run_web.bat` / `wxlocal-web` | http://127.0.0.1:8787 |
 
 ## 配置
 
@@ -98,6 +105,7 @@ copy .env.example .env
 |------|------|
 | [DISCLAIMER](docs/DISCLAIMER.md) | **必读** — 自学习声明与合规提示 |
 | [STANDALONE](docs/STANDALONE.md) | OSS 布局 · 自启 · KB 契约 |
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | 模块依赖与运行时结构 |
 | [MP_CAPTURE](docs/MP_CAPTURE.md) | mitm / IndexedDB 细节 |
 | [WECHAT_4.1.13_RESEARCH](docs/WECHAT_4.1.13_RESEARCH.md) | 4.x 解密调研笔记 |
 | [LOCAL_SETUP.example](docs/LOCAL_SETUP.example.md) | 维护者本地配置模板 |
@@ -114,4 +122,4 @@ copy .env.example .env
 
 ## License
 
-[MIT](LICENSE) © NinjaSln-labs · bundled [wcdb-key-tool](vendor/wcdb-key-tool-main/) (MIT)
+[MIT](LICENSE) · bundled [wcdb-key-tool](vendor/wcdb-key-tool-main/) (MIT)

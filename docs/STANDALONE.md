@@ -1,7 +1,6 @@
 # wxlocal · OSS maintenance notes
 
-> **GitHub:** [github.com/NinjaSln-labs/wxlocal](https://github.com/NinjaSln-labs/wxlocal)  
-> **Org:** [NinjaSln-labs](https://github.com/NinjaSln-labs)（与 qingfu-envoy、jinteng 同组织）
+> **GitHub:** [github.com/NinjaSln-labs/wxlocal](https://github.com/NinjaSln-labs/wxlocal)
 
 ## What this project is
 
