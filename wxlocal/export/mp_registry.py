@@ -22,7 +22,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-from mp_capture.idb_registry import (
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import (
     build_opener,
     fetch_title_from_page,
     find_items,

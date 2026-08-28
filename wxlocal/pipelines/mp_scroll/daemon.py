@@ -14,7 +14,7 @@ import os
 import sys
 import time
 
-from mp_capture.idb_registry import run_pipeline
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import run_pipeline
 
 from wxlocal.config.paths import (
     LEGACY_MP_SCROLL_PID,

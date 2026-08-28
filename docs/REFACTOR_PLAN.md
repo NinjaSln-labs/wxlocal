@@ -169,24 +169,12 @@ wxlocal/
 
 ---
 
-### R9 — mp_capture 归位（2–3 天，可选独立）
+### R9 — mp_capture 归位（2–3 天，可选独立）✅
 
-**目标**：消除 `mp_capture/` 与 `wxlocal.pipelines.mp_scroll` 双份认知。
-
-**方案 A（推荐）**：`mp_capture/` → `wxlocal/pipelines/mp_scroll/capture/` 子包，根保留 `mp_capture` shim 包名 1 release。
-
-**方案 B（保守）**：保持 `mp_capture/` 顶栏，但在 pyproject 中声明为 `wxlocal` 子包 namespace；文档明确「实现细节，勿直接 import」。
-
-| 动作 | 说明 |
-|------|------|
-| 移动/重命名 | `idb_registry.py` 编排已在 pipeline daemon 调用 |
-| import 全量审计 | 无根目录依赖 |
-| OCR 依赖 | 保持 optional extra `[ocr]` |
-
-**验收**：
-
-- [ ] 仅一条 registry 代码路径  
-- [ ] T3 `wxlocal-mp-scroll --once`  
+- 方案 A：`mp_capture/` → `wxlocal/pipelines/mp_scroll/capture/`
+- 根 `mp_capture/*.py` 保留 shim；`run` 在 `capture/run.py`，ops 脚本转发
+- 包内 / daemon / export / ops 改用 `wxlocal.pipelines.mp_scroll.capture.*`
+- 研究脚本可继续 `import mp_capture`（shim）
 
 ---
 

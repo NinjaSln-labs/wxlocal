@@ -5,7 +5,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from mp_capture.body_extract import extract_body_from_html
+from wxlocal.pipelines.mp_scroll.capture.body_extract import extract_body_from_html
 
 UA = (
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "

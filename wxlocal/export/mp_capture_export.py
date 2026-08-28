@@ -14,7 +14,7 @@ if hasattr(sys.stdout, "reconfigure"):
 from wxlocal.shared.http_fetch import fetch_http_body
 from wxlocal.shared.mp_filter import is_dev_related
 from wxlocal.config.paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, ensure_mp_capture_dirs
-from mp_capture.storage import load_store, save_store
+from wxlocal.pipelines.mp_scroll.capture.storage import load_store, save_store
 
 
 def build_md(meta: dict, items: list[dict]) -> str:

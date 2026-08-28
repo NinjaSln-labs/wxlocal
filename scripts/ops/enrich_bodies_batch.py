@@ -9,8 +9,8 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from mp_capture.idb_reader import url_has_sn
-from mp_capture.idb_registry import (
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import url_has_sn
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import (
     enrich_body_pending,
     export_dev_corpus,
     load_registry,

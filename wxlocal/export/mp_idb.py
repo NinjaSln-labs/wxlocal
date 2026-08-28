@@ -21,7 +21,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from wxlocal.shared.http_fetch import fetch_http_body
-from mp_capture.idb_reader import extract_titles, read_storage_bytes, scan_live
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import extract_titles, read_storage_bytes, scan_live
 from wxlocal.shared.mp_filter import is_dev_related
 from wxlocal.config.paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, ensure_mp_capture_dirs
 

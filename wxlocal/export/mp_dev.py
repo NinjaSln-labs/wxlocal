@@ -26,7 +26,7 @@ import zstd
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-from mp_capture.body_extract import extract_body_from_html
+from wxlocal.pipelines.mp_scroll.capture.body_extract import extract_body_from_html
 from wxlocal.shared.http_fetch import UA, fetch_http_body
 from wxlocal.shared.mp_filter import is_dev_related
 from wxlocal.config.paths import MP_DEV_ARCHIVE, MP_DEV_EXPORT, MP_DEV_KB, ensure_decrypted_dir, ensure_mp_dev_dirs

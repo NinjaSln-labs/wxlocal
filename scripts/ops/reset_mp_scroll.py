@@ -21,7 +21,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from mp_capture.idb_reader import DEFAULT_PROFILES, IDB_NAMES
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import DEFAULT_PROFILES, IDB_NAMES
 from wxlocal.config.paths import (
     MP_CAPTURE_EXPORT,
     MP_CAPTURE_REGISTRY,

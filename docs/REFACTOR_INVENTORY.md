@@ -53,9 +53,9 @@
 | 文件 | 目标 | 阶段 |
 |------|------|------|
 | `bootstrap_mp_watch.py` 🔀 | → `bootstrap_mp_scroll.py` | R6 ✅ |
-| `run_mp_capture.py` 🔀 | `scripts/ops/run_mp_capture.py`（包内归位见 R9） | R8 ✅ |
+| `run_mp_capture.py` 🔀 | `wxlocal/pipelines/mp_scroll/capture/run.py`（ops shim） | R9 ✅ |
 | `mp_registry.py` 🔀 | `wxlocal/export/mp_registry.py` | R8 ✅ |
-| `mp_capture/` 目录 | `wxlocal/pipelines/mp_scroll/capture/` 或保留 | R9 📦 |
+| `mp_capture/` 目录 🔀 | `wxlocal/pipelines/mp_scroll/capture/` | R9 ✅ |
 
 ---
 

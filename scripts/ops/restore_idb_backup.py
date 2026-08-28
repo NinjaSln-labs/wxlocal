@@ -18,7 +18,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from mp_capture.idb_reader import DEFAULT_PROFILES, IDB_NAMES
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import DEFAULT_PROFILES, IDB_NAMES
 
 DEFAULT_BACKUP = Path(
     r"F:\ext\knowledge-base\wechat\mp-scroll\reset-backup\20260827-151408\wechat-idb"
