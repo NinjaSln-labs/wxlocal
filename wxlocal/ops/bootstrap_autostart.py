@@ -19,7 +19,8 @@ _BOOTSTRAP_MODULES = (
 
 
 def _spawn_bootstrap(pyw: Path, module: str) -> int | None:
-    err_log = ROOT / "output" / f"autostart_{module.rsplit('.', 1)[-1]}.log"
+    tag = module.replace("wxlocal.pipelines.", "").replace(".", "_")
+    err_log = ROOT / "output" / f"autostart_{tag}.log"
     err_log.parent.mkdir(parents=True, exist_ok=True)
     log_fh = err_log.open("a", encoding="utf-8")
     env = os.environ.copy()
