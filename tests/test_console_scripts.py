@@ -3,11 +3,16 @@ from __future__ import annotations
 
 
 def test_config_package_exports():
+    from pathlib import Path
+
     from wxlocal.config import config as pkg_config
     from wxlocal.config import paths as pkg_paths
 
-    assert pkg_config.DATA_ROOT
-    assert pkg_paths.ROOT
+    # DATA_ROOT comes from WECHAT_DATA_ROOT; empty is valid in CI without .env
+    assert isinstance(pkg_config.DATA_ROOT, str)
+    assert callable(pkg_config.find_user_db_storage)
+    assert isinstance(pkg_paths.ROOT, Path)
+    assert pkg_paths.ROOT.is_dir()
 
 
 def test_pipeline_daemon_main_callable():
