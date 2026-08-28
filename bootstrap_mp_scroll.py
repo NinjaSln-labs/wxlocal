@@ -1,4 +1,4 @@
-"""Shim — use bootstrap_mp_scroll.py / wxlocal.pipelines.mp_scroll.bootstrap."""
+"""Root entry for VBS/bat — implementation in wxlocal.pipelines.mp_scroll.bootstrap."""
 from wxlocal.pipelines.mp_scroll.bootstrap import main
 
 if __name__ == "__main__":

@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import os
 
+from wxlocal.config.env_loader import load_env
 from wxlocal.config.paths.kb import WECHAT_KB
+
+load_env()
 
 WATCH_CONTACT = os.environ.get("WECHAT_WATCH_CONTACT", "FileTransfer")
 NINJASIN_CONTACT = WATCH_CONTACT  # backward-compat alias

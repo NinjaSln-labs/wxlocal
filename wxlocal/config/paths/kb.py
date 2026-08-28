@@ -5,6 +5,9 @@ import os
 from pathlib import Path
 
 from wxlocal.config._root import PROJECT_ROOT
+from wxlocal.config.env_loader import load_env
+
+load_env()
 
 ROOT = PROJECT_ROOT
 _DEFAULT_KB = ROOT / "data" / "knowledge-base"

@@ -88,9 +88,11 @@ T4 doc links OK
 
 ---
 
-## Phase R — 结构重构 ✅
+## Phase R — 结构重构（R0–R5 ✅ · R6–R10 待实施）
 
 详见 **[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md)** · 文件清单 **[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)**
+
+**Phase R0–R5 — 完成**（详见 [REFACTOR_PLAN.md](REFACTOR_PLAN.md)、[ARCHITECTURE.md](ARCHITECTURE.md)）
 
 | 阶段 | 内容 | 状态 |
 |------|------|------|
@@ -99,9 +101,27 @@ T4 doc links OK
 | R2 | `wxlocal/shared` 打断反向依赖 | ✅ |
 | R3 | 启动器合并 | ✅ |
 | R4 | 包化 + console_scripts | ✅ |
-| R5 | 命名收尾 + ARCHITECTURE | ✅ |
+| R5 | paths 拆分 + PID 命名 + ARCHITECTURE | ✅ |
 
-**Phase R — 完成**（详见 [REFACTOR_PLAN.md](REFACTOR_PLAN.md)、[ARCHITECTURE.md](ARCHITECTURE.md)）
+---
+
+## Phase R6–R10 — 根目录收口（待实施）
+
+> 完整计划：[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md) · 文件级清单：[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)
+
+| 阶段 | 内容 | 优先级 | 状态 |
+|------|------|--------|------|
+| R6 | ninjasin/mp_idb 命名收敛 · bootstrap 迁包 · 删冗余 bat/vbs | P0 | ✅ |
+| R7 | `wxlocal/core`（wcdb · decrypt · keys）· 去 `_legacy` | P0 | ⏳ |
+| R8 | pipelines/export 迁包 · ops 脚本 → `scripts/ops/` | P1 | ⏳ |
+| R9 | `mp_capture` 归位（可选） | P2 | ⏳ |
+| R10 | 删根 shim · 根目录 0 `.py` · v0.2.0 | P1 | ⏳ |
+
+**目标**：根目录只留 bat/vbs + 元数据；全部 Python 在 `wxlocal/` 内。
+
+**最小可行**：R6 + R7（~4 天）即可消除 ninjasin 困惑并修好 pip 安装路径。
+
+---
 
 ## Phase E — wenjin 侧（非本仓，不处理）
 

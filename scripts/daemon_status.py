@@ -20,17 +20,29 @@ from wxlocal.shared.daemon import migrate_pid_file, pid_running
 _PIPELINES = {
     "mp-scroll": {
         "label": "mp-scroll (IndexedDB watch)",
-        "patterns": ("bootstrap_mp_watch", "watch_mp_idb.py", "wxlocal-mp-scroll", "mp_scroll.daemon"),
+        "patterns": (
+            "bootstrap_mp_scroll",
+            "bootstrap_mp_watch",
+            "watch_mp_idb.py",
+            "wxlocal-mp-scroll",
+            "mp_scroll.daemon",
+        ),
         "pid_file": MP_SCROLL_PID,
         "legacy_pid_files": (LEGACY_MP_SCROLL_PID,),
-        "process_pattern": "watch_mp_idb.py",
+        "process_pattern": "mp_scroll",
     },
     "chat-watch": {
         "label": "chat-watch (contact export)",
-        "patterns": ("bootstrap_ninjasin_watch", "watchdog.py", "wxlocal-watch", "chat_watch.daemon"),
+        "patterns": (
+            "bootstrap_chat_watch",
+            "bootstrap_ninjasin_watch",
+            "watchdog.py",
+            "wxlocal-watch",
+            "chat_watch.daemon",
+        ),
         "pid_file": CHAT_WATCH_PID,
         "legacy_pid_files": (LEGACY_CHAT_WATCH_PID,),
-        "process_pattern": "watchdog.py",
+        "process_pattern": "chat_watch",
     },
 }
 

@@ -5,10 +5,11 @@ import os
 from pathlib import Path
 
 from wxlocal.config.env_loader import load_env
-from wxlocal.config.paths import DECRYPTED_DIR as _DECRYPTED_DIR
-from wxlocal.config.paths import OUTPUT_DIR as _OUTPUT_DIR
 
 load_env()
+
+from wxlocal.config.paths import DECRYPTED_DIR as _DECRYPTED_DIR  # noqa: E402
+from wxlocal.config.paths import OUTPUT_DIR as _OUTPUT_DIR  # noqa: E402
 
 
 def _default_data_root() -> str:

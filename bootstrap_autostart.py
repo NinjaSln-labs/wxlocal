@@ -14,6 +14,8 @@ if str(ROOT) not in sys.path:
 from autostart_util import append_autostart_log, resolve_pythonw, wait_for_paths
 from subprocess_win import CREATE_NO_WINDOW
 
+_BOOTSTRAPS = ("bootstrap_mp_scroll.py", "bootstrap_chat_watch.py")
+
 
 def _spawn_bootstrap(pyw: Path, script: str) -> int | None:
     target = ROOT / script
@@ -47,7 +49,7 @@ def main() -> int:
         return 1
     append_autostart_log(f"using pythonw={pyw}")
     pids = []
-    for script in ("bootstrap_mp_watch.py", "bootstrap_ninjasin_watch.py"):
+    for script in _BOOTSTRAPS:
         pid = _spawn_bootstrap(pyw, script)
         if pid:
             pids.append(pid)

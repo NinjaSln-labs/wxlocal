@@ -1,3 +1,3 @@
 @echo off
 cd /d "%~dp0"
-wscript //nologo "%~dp0launchers\win\run_daemon.vbs" bootstrap_ninjasin_watch.py chat-watch
+wscript //nologo "%~dp0launchers\win\run_daemon.vbs" bootstrap_chat_watch.py chat-watch

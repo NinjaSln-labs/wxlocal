@@ -20,6 +20,14 @@ def test_pipeline_daemon_main_callable():
     assert callable(scroll_main)
 
 
+def test_pipeline_bootstrap_main_callable():
+    from wxlocal.pipelines.chat_watch.bootstrap import main as chat_boot
+    from wxlocal.pipelines.mp_scroll.bootstrap import main as scroll_boot
+
+    assert callable(chat_boot)
+    assert callable(scroll_boot)
+
+
 def test_export_and_web_main_callable():
     from wxlocal.export.cli import main as export_main
     from wxlocal.web.app import main as web_main

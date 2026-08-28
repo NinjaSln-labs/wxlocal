@@ -46,7 +46,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for module dependencies.
 
 ## Autostart
 
-Login flow: `WxLocalAutostart.vbs` → `bootstrap_autostart.py` (waits for `WECHAT_KB_ROOT` / `WECHAT_DATA_ROOT` drives) → spawns `bootstrap_mp_watch.py` + `bootstrap_ninjasin_watch.py`.
+Login flow: `WxLocalAutostart.vbs` → `bootstrap_autostart.py` (waits for `WECHAT_KB_ROOT` / `WECHAT_DATA_ROOT` drives) → spawns `bootstrap_mp_scroll.py` + `bootstrap_chat_watch.py`.
 
 - Startup folder: `WxLocalAutostart.vbs` + `wxlocal.path`
 - Install: `setup_wxlocal_autostart.bat`

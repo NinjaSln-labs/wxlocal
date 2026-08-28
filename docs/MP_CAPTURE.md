@@ -61,17 +61,16 @@ IndexedDB 有 LRU 上限，旧 URL 会被挤掉 → 用 **后台 pipeline** 累�
 
 ```powershell
 # 后台（15s 一轮：扫 IDB → 抓标题/正文 → 开发向导出）
-.\run_mp_idb_watch.bat
-.\stop_mp_idb_watch.bat
-.\status_mp_idb_watch.bat          # 进程 + 最近日志/错误
+.\run_mp_scroll.bat
+.\stop_wxlocal.bat
+.\status_wxlocal.bat
 
-# 登录后自动启动（一次性，无需管理员）
-.\setup_mp_idb_autostart.ps1
-# 卸载: .\setup_mp_idb_autostart.ps1 -Uninstall
-# 状态: .\status_wechat_reader.bat
+# 登录后自动启动（一次性）
+.\setup_wxlocal_autostart.bat
 
 # 手动跑一轮
-.venv\Scripts\python.exe watch_mp_idb.py --once
+.venv\Scripts\wxlocal-mp-scroll.exe --once
+# 或: .venv\Scripts\python.exe watch_mp_idb.py --once
 
 # 查看
 .venv\Scripts\python.exe mp_registry.py list

@@ -1,4 +1,4 @@
-"""Shim — use bootstrap_chat_watch.py / wxlocal.pipelines.chat_watch.bootstrap."""
+"""Root entry for VBS/bat — implementation in wxlocal.pipelines.chat_watch.bootstrap."""
 from wxlocal.pipelines.chat_watch.bootstrap import main
 
 if __name__ == "__main__":

@@ -93,9 +93,9 @@ flowchart TB
 ```
 WxLocalAutostart.vbs
   → bootstrap_autostart.py (wait_for_paths, resolve pythonw)
-    → bootstrap_mp_watch.py
-    → bootstrap_ninjasin_watch.py
-      → launchers/win/run_daemon.vbs
+    → bootstrap_mp_scroll.py
+    → bootstrap_chat_watch.py
+      → launchers/win/run_daemon.vbs  (manual run_*.bat path)
 ```
 
 ## Deliberately out of scope

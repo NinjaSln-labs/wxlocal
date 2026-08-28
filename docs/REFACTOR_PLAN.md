@@ -1,237 +1,348 @@
-# wxlocal 重构计划
+# wxlocal 重构计划（完整版）
 
-> **范围**：仅 `wxlocal` 本仓。不处理 wenjin / 其它仓库。  
-> **原则**：小步交付、每步 `scripts/verify.ps1` 全绿、旧入口保留兼容层直至下一 major。  
-> **现状**：审计（Phase A–D）已收；代码仍 **扁平散落**（根目录 ~40 个 `.py`、三套命名、库层反向依赖根脚本）。
+> **范围**：仅 `wxlocal` 本仓。  
+> **工作流**：计划 → 实现 → `scripts/verify.ps1` → commit/push。  
+> **原则**：小步交付、每步可回滚、旧入口 shim 保留 1 个 release 直至下一 minor/major。
 
 ---
 
-## 1. 问题诊断
+## 0. 文档索引
 
-### 1.1 根目录过载
+| 文档 | 用途 |
+|------|------|
+| 本文 | 阶段划分、验收、风险 |
+| [REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md) | 根目录每个文件的迁移动作 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 目标依赖与运行时结构 |
+| [DEV_PLAN.md](DEV_PLAN.md) | 里程碑状态与测试门禁 |
 
-| 类别 | 数量 | 示例 |
+---
+
+## 1. 现状快照（R0–R5 已完成，2026-08-28）
+
+### 1.1 已解决
+
+| 问题 | 阶段 | 结果 |
 |------|------|------|
-| 生产 daemon / pipeline | ~12 | `watchdog.py`, `watch_mp_idb.py`, `archive_ninjasin_delta.py` |
-| 生产 export | 6 | `export_contact.py`, `export_mp_dev.py`, … |
-| 核心基础设施 | ~10 | `paths.py`, `config.py`, `wcdb_bridge.py`, `daemon_util.py` |
-| 调试 / 一次性脚本 | ~20 | `debug_scan*.py`, `test_keys.py`, `scan_keys.py` |
-| 启动器 bat/vbs/ps1 | ~33 | 多套重复 wrapper |
+| 调试脚本占根目录 | R1 | → `scripts/legacy/` |
+| `mp_capture` 反向 import 根模块 | R2 | → `wxlocal/shared` |
+| 33 个重复 launcher | R3 | → `launchers/win/run_daemon.vbs` + 规范 bat |
+| 入口未包化 | R4 | → `wxlocal.*` + console_scripts |
+| paths 单体、PID 命名混乱 | R5 | → `wxlocal/config/paths/*` + `chat_watch.pid` |
 
-**症状**：新人无法从目录树判断「哪些是产品、哪些是垃圾、哪些是研究」。
+### 1.2 仍存在的问题
 
-### 1.2 三套命名并存
+**根目录仍有 ~33 个 `.py`、~20 个 bat/vbs/ps1**（见 [REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)）。
 
-| 时代 | 仍存在的标识 |
-|------|----------------|
-| wechat-reader | `WeChatReaderAutostart.vbs`, `status_wechat_reader.bat`, `WECHAT_READER_PYTHON` |
-| ninjasin | `bootstrap_ninjasin_watch.py`, `ninjasin_dedup.py`, `NINJASIN_STATE_DIR`, `run_ninjasin_watchdog.*` |
-| wxlocal / 产品名 | `WxLocalAutostart.vbs`, `CHAT_WATCH_KB`, `WECHAT_WATCH_CONTACT` |
+| 类别 | 数量 | 典型文件 | 原因 |
+|------|------|----------|------|
+| Shim（3–10 行） | 12 | `watchdog.py`, `paths.py`, `ninjasin_dedup.py` | R4 兼容层未删 |
+| Core 未迁包 | 7 | `wcdb_bridge.py`, `decrypt_db.py`, `scan_keys_v41.py` | R4 只迁了入口 |
+| Pipeline 逻辑留根 | 4 | `archive_ninjasin_delta.py`, `export_contact.py` | 未做 `pipelines.*` 子模块 |
+| Export 留根 | 5 | `export_mp_dev.py`, `export_mp_idb.py` … | 未做 `wxlocal/export/*` |
+| 运维/工具 | 6 | `enrich_bodies_batch.py`, `reset_mp_scroll.py` … | 未迁 `scripts/ops/` |
+| Bootstrap 旧名 | 2 | `bootstrap_ninjasin_watch.py` | 自启链硬编码文件名 |
+| mp_capture 独立顶栏包 | 1 目录 | `mp_capture/` | 未并入 `wxlocal.pipelines` |
 
-README 对外说 **chat-watch** + **mp-scroll**，代码和启动器仍大量 **ninjasin**。
+**命名**：对外已是 chat-watch / mp-scroll；对内仍大量 `ninjasin_*`、`mp_idb_*`、wechat-reader 残留。
 
-### 1.3 依赖方向错误（最该优先修）
+**依赖**：`wxlocal.pipelines` 经 `wxlocal._legacy` 仍 import 根目录 `export_contact`、`wcdb_bridge` 等；`pip install` 后靠 `sys.path` 补丁，非最终态。
+
+### 1.3 目标终态（根目录）
 
 ```
-mp_capture/idb_registry.py  ──import──►  export_mp_dev.py      (根目录)
-                          ──import──►  ninjasin_dedup.py      (根目录)
-                          ──import──►  mp_dev_filter.py       (根目录)
+wxlocal/                          # 仅保留用户-facing 入口
+├── README.md
+├── LICENSE
+├── pyproject.toml
+├── requirements.txt
+├── .env.example
+│
+├── run_extract.bat               # Core 一键解密
+├── run_web.bat
+├── run_chat_watch.bat
+├── run_mp_scroll.bat
+├── run_mp_capture.bat
+├── stop_wxlocal.bat
+├── status_wxlocal.bat
+├── setup_wxlocal_autostart.bat
+├── WxLocalAutostart.vbs
+│
+├── wxlocal/                      # 全部 Python 实现
+├── mp_capture/                   # （R9 可选并入 wxlocal）
+├── launchers/win/
+├── scripts/ops/ + scripts/research/ + scripts/legacy/
+├── vendor/
+├── tests/
+├── docs/
+├── templates/
+└── output/                       # gitignore
 ```
 
-**库包不应 import 根脚本**。这导致无法安全打包、测试边界模糊。
+**根目录 `.py` 目标：0 个**（或仅保留 `pyproject` 无关的 0；所有 py 在包内 + shims 在 `wxlocal/_shims/` 若必须）。
 
-### 1.4 启动器重复
-
-- `bootstrap_mp_watch.py` ≈ `bootstrap_ninjasin_watch.py`（仅目标模块不同）
-- `run_mp_idb_watch.vbs` ≈ `run_ninjasin_watchdog.vbs` ≈ `WxLocalAutostart.vbs` 内嵌逻辑
-- `launch_*` / `run_*` / `stop_wechat_reader` 等多为 **薄转发**，增加认知成本
-
-### 1.5 路径与状态分散
-
-- PID 文件：`ninjasin_watch.pid` vs `mp_idb_watch.pid`（命名不一致）
-- 日志：repo `output/` + KB `state/` 双写
-- 个别 stop bat 仍硬编码 `F:\ext\...`（与 `paths.py` 契约脱节）
+**过渡期**：允许 `WeChatReaderAutostart.vbs` 等 **最多 1 个 release** 的 deprecated 转发，之后删除。
 
 ---
 
 ## 2. 目标架构
 
-### 2.1 逻辑分层（不急于物理搬家）
+### 2.1 包结构
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  launchers/          bat · vbs · ps1（薄入口）           │
-├─────────────────────────────────────────────────────────┤
-│  wxlocal/            可安装 Python 包                    │
-│    config/           env + paths                         │
-│    core/             解密 · 读库 · wcdb                  │
-│    shared/           dedup · filter · http · daemon_util │
-│    pipelines/                                            │
-│      chat_watch/     daemon · export · archive           │
-│      mp_scroll/      daemon · idb · registry · ocr       │
-│      mp_capture/     mitm addon · storage                │
-│    export/           CLI 导出（messages / mp_*）          │
-│    web/              Flask app + service                 │
-├─────────────────────────────────────────────────────────┤
-│  scripts/                                                │
-│    ops/              verify · daemon_status · env helpers  │
-│    research/         51 个 probe（保持不动）              │
-│    legacy/           根目录迁出的 debug / 旧 scanner       │
-├─────────────────────────────────────────────────────────┤
-│  vendor/             wcdb-key-tool                       │
-│  tests/              pytest smoke + 后续 pipeline 单测     │
-└─────────────────────────────────────────────────────────┘
+wxlocal/
+├── config/          env · paths（已完成）
+├── core/            wcdb · decrypt · keys · messages · subprocess_win
+├── shared/          dedup · filter · http · daemon（已完成）
+├── pipelines/
+│   ├── chat_watch/  daemon · bootstrap · archive · export_contact
+│   └── mp_scroll/   daemon · bootstrap · registry 编排
+├── export/          cli · contact · messages · mp_dev · mp_idb · mp_capture
+├── web/             app · service（已完成）
+├── ops/             autostart_util · bootstrap_autostart（可选）
+└── _legacy.py       删除条件：无根目录 import 依赖
 ```
 
-### 2.2 命名收敛（对外 vs 对内）
+### 2.2 命名映射（一次性收敛）
 
-| 概念 | 对外名（文档/README） | 代码包名 | 兼容别名（保留 1 个 release） |
-|------|----------------------|----------|------------------------------|
-| 联系人同步 | chat-watch | `pipelines.chat_watch` | `ninjasin_*` 常量 re-export |
-| 订阅号滑屏 | mp-scroll | `pipelines.mp_scroll` | `mp_idb_*` 日志文件名可暂留 |
-| 本工具 | wxlocal | 包名 `wxlocal` | — |
+| 旧（删除目标） | 新（canonical） |
+|----------------|-----------------|
+| `bootstrap_ninjasin_watch.py` | `wxlocal/pipelines/chat_watch/bootstrap.py` |
+| `bootstrap_mp_watch.py` | `wxlocal/pipelines/mp_scroll/bootstrap.py` |
+| `archive_ninjasin_delta.py` | `wxlocal/pipelines/chat_watch/archive.py` |
+| `run_ninjasin_watchdog.vbs` | `launchers/win/run_chat_watch.vbs` 或删（bat 直调 VBS 参数） |
+| `run_mp_idb_watch.vbs` | 同上 mp-scroll |
+| `stop_ninjasin_watchdog.bat` | 删（仅保留 `stop_wxlocal.bat`） |
+| `stop_mp_idb_watch.bat` | 删 |
+| `status_mp_idb_watch.bat` | `status_wxlocal.bat mp-scroll` 或删 |
+| `ninjasin_dedup.py` | 删 shim（只用 `wxlocal.shared.dedup`） |
+| `NINJASIN_*` 常量 | 保留为 deprecated alias 1 release，文档标 `@deprecated` |
+| KB 子目录 `wechat/ninjasin/` | 运行时只写 `chat-watch/`；读路径时 fallback（已有） |
 
-### 2.3 依赖规则（重构后强制）
+### 2.3 依赖规则（强制）
 
 1. `wxlocal.config` → 无业务依赖  
 2. `wxlocal.core` → 仅 config  
 3. `wxlocal.shared` → config  
-4. `wxlocal.pipelines.*` → core + shared + config  
-5. `wxlocal.export` → core + shared  
-6. **禁止** `mp_capture` / `pipelines` import 根目录模块  
-7. `scripts/research` 可 import `wxlocal`，但 `wxlocal` 不得 import research  
+4. `wxlocal.pipelines.*` / `wxlocal.export` → core + shared + config  
+5. **禁止** 包内 `import export_contact` 等根模块  
+6. **禁止** `mp_capture` import 根模块（已基本完成，R9 复核）  
+7. `scripts/research` → 可 import `wxlocal`；反向禁止  
+
+**验收**：`tests/test_imports.py` grep / import-linter；`wxlocal-watch --once` 在未把 repo root 加入 `PYTHONPATH` 时仍可用。
 
 ---
 
-## 3. 分阶段实施（R0–R5）
+## 3. 分阶段实施
 
-每阶段：**计划 → 实现 → `verify.ps1` → commit**。  
-预估总工期：**2–3 周**（按每阶段 1–3 天、含手测）。
+### 已完成：R0–R5 ✅
+
+见 git history `1631d21` … `0518c5d`。摘要：
+
+- R1 legacy 清扫 · R2 shared · R3 launchers · R4 包化入口 · R5 paths 拆分 + PID
 
 ---
 
-### R0 — 冻结与清单（0.5 天）✅ 本文档
+### R6 — 命名收敛（ninjasin / mp_idb / wechat-reader）（2 天）✅
 
-| 交付 | 说明 |
+- `wxlocal/pipelines/*/bootstrap.py` — 真实逻辑
+- 规范根入口：`bootstrap_chat_watch.py`、`bootstrap_mp_scroll.py`
+- 旧名 `bootstrap_ninjasin_watch.py` / `bootstrap_mp_watch.py` 保留 shim
+- 删除：`run_*_watchdog.vbs`、`stop_ninjasin_*`、`stop_mp_idb_*`、`status_mp_idb_watch.bat`
+- `daemon_status.py` / 自启链已切到新名
+
+---
+
+### R7 — core 层包化（2–3 天）
+
+**目标**：解密/读库/密钥提取进 `wxlocal.core`；去掉 `_legacy` 对 core 的依赖。
+
+| 迁移动作 | 源 | 目标 |
+|----------|-----|------|
+| WCDB 桥 | `wcdb_bridge.py` | `wxlocal/core/wcdb.py` |
+| 密钥扫描 | `scan_keys_v41.py` | `wxlocal/core/keys.py` |
+| 解密 | `decrypt_db.py` | `wxlocal/core/decrypt.py` |
+| 读消息 | `read_messages.py` | `wxlocal/core/messages.py` |
+| 密钥解析 | `key_parser.py` | `wxlocal/core/key_parser.py` |
+| Windows 子进程 | `subprocess_win.py` | `wxlocal/core/subprocess_win.py` |
+
+| 后续 | |
+|------|--|
+| 根目录 | 每个文件留 shim 1 release |
+| `wxlocal/web/service.py` | 改 import `wxlocal.core.*` |
+| `wxlocal/export/cli.py` | 同上 |
+| `wxlocal/pipelines/chat_watch/daemon.py` | 同上；可移除部分 `bootstrap_legacy_imports()` |
+| `tests/test_core_imports.py` | 新增 |
+
+**验收**：
+
+- [ ] `wxlocal-watch --once` 不依赖 repo root on sys.path（仅 core 路径）  
+- [ ] T1 compileall 改为 `wxlocal mp_capture`  
+- [ ] pytest 全绿  
+
+---
+
+### R8 — pipelines + export 包化（3–4 天）
+
+**目标**：archive、export_contact、各 `export_*.py` 迁入包内；chat-watch 闭环在 `wxlocal.pipelines.chat_watch`。
+
+| 模块 | 源 | 目标 |
+|------|-----|------|
+| 联系人导出 | `export_contact.py` | `wxlocal/pipelines/chat_watch/export.py` |
+| 增量归档 | `archive_ninjasin_delta.py` | `wxlocal/pipelines/chat_watch/archive.py` |
+| 消息导出 | `export_messages.py` | `wxlocal/export/messages.py` |
+| mp 导出 | `export_mp_dev/idb/capture.py` | `wxlocal/export/mp_*.py` |
+| CLI 聚合 | — | `wxlocal/export/__init__.py` 暴露 main |
+| 编排 | `mp_registry.py` | `wxlocal/export/mp_registry.py` 或 `scripts/ops/` |
+
+| mp-scroll 工具 | 源 | 目标 |
+|----------------|-----|------|
+| 批处理补正文 | `enrich_bodies_batch.py` | `scripts/ops/enrich_bodies_batch.py` |
+| 标题重扫 | `rescan_titles.py` | `scripts/ops/rescan_titles.py` |
+| 状态重置 | `reset_mp_scroll.py` | `scripts/ops/reset_mp_scroll.py` |
+| IDB 恢复 | `restore_idb_backup.py` | `scripts/ops/restore_idb_backup.py` |
+| mitm 状态 | `mp_capture_status.py` | `scripts/ops/mp_capture_status.py` |
+| mitm 启动 | `run_mp_capture.py` | `wxlocal/pipelines/mp_capture/run.py` |
+
+**验收**：
+
+- [ ] `chat_watch/daemon.py` 无 `from archive_ninjasin_delta`  
+- [ ] 根目录 `.py` ≤ 15（仅剩 shim + bootstrap shim）  
+- [ ] T2/T3 全绿  
+
+---
+
+### R9 — mp_capture 归位（2–3 天，可选独立）
+
+**目标**：消除 `mp_capture/` 与 `wxlocal.pipelines.mp_scroll` 双份认知。
+
+**方案 A（推荐）**：`mp_capture/` → `wxlocal/pipelines/mp_scroll/capture/` 子包，根保留 `mp_capture` shim 包名 1 release。
+
+**方案 B（保守）**：保持 `mp_capture/` 顶栏，但在 pyproject 中声明为 `wxlocal` 子包 namespace；文档明确「实现细节，勿直接 import」。
+
+| 动作 | 说明 |
 |------|------|
-| `docs/REFACTOR_PLAN.md` | 本文件 |
-| `docs/REFACTOR_INVENTORY.md` | 根目录每个 `.py` 归类表（见 §4） |
-| DEV_PLAN 增加 Phase R 指针 | 链到本计划 |
+| 移动/重命名 | `idb_registry.py` 编排已在 pipeline daemon 调用 |
+| import 全量审计 | 无根目录依赖 |
+| OCR 依赖 | 保持 optional extra `[ocr]` |
 
-**验收**：团队对目标目录树与阶段顺序达成一致。
+**验收**：
 
----
-
-### R1 — 清扫根目录垃圾（低风险，1 天）✅
-
-21 个调试/本地脚本已移至 `scripts/legacy/`；根目录 `.py` 约 40 → 25。
+- [ ] 仅一条 registry 代码路径  
+- [ ] T3 `wxlocal-mp-scroll --once`  
 
 ---
 
-### R2 — 抽出 shared 层，打断反向依赖（核心，2–3 天）✅
+### R10 — 删 shim、根目录收口（1–2 天）
 
-`wxlocal/shared/{dedup,mp_filter,http_fetch,daemon}.py` 已落地；根目录 shim 保留；`tests/test_shared_imports.py` 锁定 import 方向。
+**目标**：根目录 0 个 `.py`；breaking 仅在 major 或 CHANGELOG 标明。
 
----
+| 动作 | 说明 |
+|------|------|
+| 删除根 shim | `watchdog.py`, `paths.py`, `config.py`, … 全部删除 |
+| 删除 | `WeChatReaderAutostart.vbs`, `setup_autostart.ps1`（若仍转发） |
+| 删除 | `ninjasin_dedup.py`, `mp_dev_filter.py`, `daemon_util.py` |
+| bat 更新 | 凡 `python watchdog.py` → `wxlocal-watch` 或 `python -m wxlocal.pipelines.chat_watch.daemon` |
+| VBS 更新 | `pythonw -m wxlocal.pipelines.chat_watch.bootstrap` |
+| 删除 `wxlocal/_legacy.py` | 无引用后 |
+| bump | `pyproject.toml` version → `0.2.0` |
+| CHANGELOG | 列出删除的 shim 与迁移表 |
 
-### R3 — 统一启动器（1–2 天）✅
+**根目录 `.py` 验收：0**
 
-- `launchers/win/run_daemon.vbs` — 参数化 bootstrap 启动（ResolveProjectRoot / pythonw / log）
-- 规范入口：`run_chat_watch.bat`、`run_mp_scroll.bat`；旧名保留转发
-- `scripts/daemon_status.py stop` — 统一 stop，无 `F:\` 硬编码
-- `tests/test_launchers.py` — 入口存在性 + stop bat 契约
-
----
-
-### R4 — 包化入口（2–3 天）✅
-
-- `wxlocal/config/` — `env_loader`, `paths`, `config`（根目录 shim 保留）
-- `wxlocal/pipelines/chat_watch/daemon.py`、`mp_scroll/daemon.py` — daemon 实现
-- `wxlocal/web/`、`wxlocal/export/cli.py` — Web 与导出 CLI
-- **console_scripts**：`wxlocal-watch`, `wxlocal-mp-scroll`, `wxlocal-export`, `wxlocal-web`
-- `tests/test_console_scripts.py` — import 契约
+**Launcher 验收：≤ 12 个 bat/vbs**（见 §1.3）
 
 ---
 
-### R5 — 收尾与契约固化（1 天）✅
+## 4. 时间与优先级
 
-- `wxlocal/config/paths/` 按 pipeline 拆分；根 `paths.py` shim 保留
-- PID/日志统一：`chat_watch.pid`、`mp_scroll.pid`；启动时迁移旧 pid 文件
-- 删除 R3 遗留转发 bat（保留 `WeChatReaderAutostart.vbs` → `WxLocalAutostart.vbs`）
-- `docs/ARCHITECTURE.md` 依赖图；`tests/test_pid_files.py`
+| 阶段 | 工期 | 优先级 | 依赖 |
+|------|------|--------|------|
+| R6 命名 | 2d | **P0** | — |
+| R7 core | 2–3d | **P0** | — |
+| R8 pipelines/export | 3–4d | **P1** | R7 |
+| R9 mp_capture | 2–3d | P2 | R8 |
+| R10 删 shim | 1–2d | P1 | R7+R8 |
 
-**Phase R 完成。**
+**合计**：约 **10–14 个工作日**。
 
----
-
-## 4. 根目录文件归类表（R1 输入）
-
-### 保留为入口（R4 前不动）
-
-`watchdog.py`, `watch_mp_idb.py`, `main.py`, `app.py`, `bootstrap_*.py`, `export_*.py`, `mp_registry.py`, `run_mp_capture.py`, `paths.py`, `config.py`, `env_loader.py`, `daemon_util.py`, `wcdb_bridge.py`, `scan_keys_v41.py`, `decrypt_db.py`, `read_messages.py`, `key_parser.py`, `service.py`, `subprocess_win.py`, `archive_ninjasin_delta.py`, `ninjasin_dedup.py`, `mp_dev_filter.py`, `enrich_bodies_batch.py`, `rescan_titles.py`, `reset_mp_scroll.py`, `restore_idb_backup.py`, `mp_capture_status.py`
-
-### R1 迁至 `scripts/legacy/`
-
-`debug_*.py`, `scan_keys.py`, `test_*.py`, `login_scan.py`, `fast_login_scan.py`, `check_dbs.py`, `extract_key_from_info.py`, `read_key_info.py`, `fetch_full_content.py`, `find_contact.py`, `parse_merged.py`, `_check_delta_bodies.py`, `_print_delta.py`, `_sample_ocr.py`
-
-### 已在正确位置
-
-`mp_capture/*`, `scripts/research/*`, `scripts/ops/*`, `tests/*`, `vendor/*`
+**若时间紧（最小可行）**：**R6 + R7**（~4 天）→ 命名清晰 + pip install 不依赖根 path；shim 暂留。
 
 ---
 
-## 5. 风险与回滚
+## 5. 测试与门禁（每阶段）
+
+| # | 命令 | 说明 |
+|---|------|------|
+| T1 | `python -m compileall -q wxlocal mp_capture` | 包内语法 |
+| T2 | `wxlocal-watch --once` | chat-watch 集成 |
+| T3 | `wxlocal-mp-scroll --once` | mp-scroll 集成 |
+| T4 | doc links in `verify.ps1` | 文档存在 |
+| T5 | `pytest tests/` | smoke |
+| T6 | 自启手测（动 launchers 时） | 登录 → PID → stop |
+
+**R7+ 新增**：
+
+| # | 命令 | 说明 |
+|---|------|------|
+| T7 | `pip install -e . && wxlocal-watch --once`（cwd=/tmp 空目录） | 无 repo root path |
+
+---
+
+## 6. 风险与回滚
 
 | 风险 | 缓解 |
 |------|------|
-| 自启 VBS 路径变更导致登录不启动 | R3 前不改 `WxLocalAutostart.vbs` 文件名；只抽内部函数 |
-| 外部脚本 import 根模块 | 全程保留 shim；grep 本仓 + README 声明 deprecate 时间表 |
-| `mp_capture` 与 `wxlocal.pipelines.mp_scroll` 双份 | R4 先 **复制** 后 **删旧**；registry 只保留一份 |
-| 重构期间功能回归 | 每阶段必须 T2/T3；R4 后加 `wxlocal-watch --once` 对照测试 |
+| 自启文件名变更 | R6 先改 bootstrap 模块路径，VBS 参数化；保留旧 shim 1 release |
+| Startup 文件夹旧 VBS | `setup_wxlocal_autostart.bat` 重装；文档说明 |
+| 用户脚本 `import paths` | R10 前 CHANGELOG + shim；R10 major bump |
+| KB 上旧 pid/log 文件名 | R5 已 migrate；R6 复核日志路径 |
+| mp_capture 移动破坏 import | R9 方案 A 保留 shim 包 `mp_capture` → re-export |
 
-**回滚策略**：每阶段独立 commit；失败则 `git revert` 单 commit，不跨阶段大块 revert。
-
----
-
-## 6. 刻意不做（本计划范围外）
-
-- 不改微信解密算法 / wcdb vendor 内部
-- 不合并三条 pipeline 为单一 daemon
-- 不处理 wenjin 语料仓逻辑
-- 不重写 `scripts/research/` 51 个 probe
-- 不做大规模性能优化或 OCR 架构变更
-- 不在 R4 前改 KB 目录布局（`WECHAT_KB_ROOT` 契约不变）
+**回滚**：每阶段单 commit；`git revert` 单步。
 
 ---
 
-## 7. 建议执行顺序（给 Shadow）
+## 7. 刻意不做
 
-```
-R0 读计划拍板
-  ↓
-R1 扫垃圾（立刻减负，零行为变化）
-  ↓
-R2 shared 层（解耦，收益最大）
-  ↓
-R3 启动器（运维体验）
-  ↓
-R4 包化（长期可维护）
-  ↓
-R5 收尾命名 + 删 shim
-```
-
-**若时间紧**：至少做 **R1 + R2**（3–4 天），已能解决「散」和「反向依赖」两大痛点。
+- 微信解密算法 / vendor 内部  
+- 三 pipeline 合并为单 daemon  
+- wenjin / 下游语料仓逻辑  
+- 重写 `scripts/research/`  
+- OCR / 性能大改  
+- 强制迁移用户 KB 目录 `ninjasin/` → `chat-watch/`（仅停止写入旧路径）
 
 ---
 
-## 8. 阶段完成检查表
+## 8. 阶段检查表（复制到 PR / commit）
 
 ```
 ## R?
-- [ ] 计划章节已读，范围无蔓延
-- [ ] scripts/verify.ps1（含 T2/T3 手测）
+- [ ] REFACTOR_INVENTORY 对应行已更新
+- [ ] scripts/verify.ps1 全绿（T2/T3 手测若动 pipeline）
 - [ ] pytest 无回归
-- [ ] 自启/status 手测（若动 launchers）
-- [ ] DEV_PLAN / REFACTOR_PLAN 状态更新
-- [ ] commit message 标明 R? 阶段
+- [ ] 自启/status（若动 launchers/bootstrap）
+- [ ] DEV_PLAN / ARCHITECTURE 同步
+- [ ] commit: Refactor R?: <one line why>
 ```
+
+---
+
+## 9. 建议执行顺序
+
+```
+R6 命名（立刻消除 ninjasin 困惑）
+  ↓
+R7 core（解除 _legacy 补丁）
+  ↓
+R8 pipelines/export（根目录减半）
+  ↓
+R9 mp_capture（可选，架构纯粹）
+  ↓
+R10 删 shim + 0 py 根目录 + 0.2.0
+```
+
+**Shadow 拍板点**：
+
+1. R9 选方案 A 还是 B？  
+2. R10 是否与 `0.2.0` 公开发 release 绑定？  
+3. `stop_mp_idb_watch.bat` 等别名是否直接删（建议删，文档写 `stop_wxlocal.bat`）？
