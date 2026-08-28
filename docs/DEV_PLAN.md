@@ -88,7 +88,22 @@ T4 doc links OK
 
 ---
 
-## Phase E — wenjin 侧（非本仓，仅跟踪）
+## Phase R — 结构重构（进行中）
+
+详见 **[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md)** · 文件清单 **[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)**
+
+| 阶段 | 内容 | 状态 |
+|------|------|------|
+| R0 | 计划与清单 | ✅ |
+| R1 | 根目录垃圾 → `scripts/legacy/` | ✅ |
+| R2 | `wxlocal/shared` 打断反向依赖 | ✅ |
+| R3 | 启动器合并 | ⏳ |
+| R4 | 包化 + console_scripts | ⏳ |
+| R5 | 命名收尾 + 删 shim | ⏳ |
+
+---
+
+## Phase E — wenjin 侧（非本仓，不处理）
 
 | 项 | 说明 |
 |----|------|

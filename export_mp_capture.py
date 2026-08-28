@@ -14,8 +14,8 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from export_mp_dev import fetch_http_body
-from mp_dev_filter import is_dev_related
+from wxlocal.shared.http_fetch import fetch_http_body
+from wxlocal.shared.mp_filter import is_dev_related
 from paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, ensure_mp_capture_dirs
 from mp_capture.storage import load_store, save_store
 

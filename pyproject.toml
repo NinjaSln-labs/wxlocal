@@ -43,7 +43,7 @@ Documentation = "https://github.com/NinjaSln-labs/wxlocal/blob/main/docs/STANDAL
 Issues = "https://github.com/NinjaSln-labs/wxlocal/issues"
 
 [tool.setuptools.packages.find]
-include = ["mp_capture*"]
+include = ["wxlocal*", "mp_capture*"]
 
 [build-system]
 requires = ["setuptools>=68"]

@@ -34,7 +34,7 @@ from mp_capture.idb_registry import (
     save_registry,
     scan_once,
 )
-from mp_dev_filter import is_dev_related
+from wxlocal.shared.mp_filter import is_dev_related
 
 PROXY = os.environ.get("WECHAT_FETCH_PROXY", "http://127.0.0.1:6696")
 

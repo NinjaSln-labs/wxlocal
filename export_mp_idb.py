@@ -23,9 +23,9 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-from export_mp_dev import fetch_http_body
+from wxlocal.shared.http_fetch import fetch_http_body
 from mp_capture.idb_reader import extract_titles, read_storage_bytes, scan_live
-from mp_dev_filter import is_dev_related
+from wxlocal.shared.mp_filter import is_dev_related
 from paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, ensure_mp_capture_dirs
 
 PROXY = os.environ.get("WECHAT_FETCH_PROXY", "http://127.0.0.1:6696")

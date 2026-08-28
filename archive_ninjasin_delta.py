@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 
 from paths import ARCHIVE_ROOT, EXPORTS_DIR, WATCH_CONTACT, ensure_kb_dirs
-from ninjasin_dedup import dedup_key, load_known_keys, register_keys, split_new_items
+from wxlocal.shared.dedup import dedup_key, load_known_keys, register_keys, split_new_items
 
 ROOT = Path(__file__).resolve().parent
 INPUT = EXPORTS_DIR / f"messages_{WATCH_CONTACT}.json"

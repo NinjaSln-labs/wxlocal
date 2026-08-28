@@ -16,6 +16,6 @@ jobs:
       - name: Install package (dev)
         run: pip install -e ".[dev]"
       - name: Compile Python sources
-        run: python -m compileall -q mp_capture autostart_util.py daemon_util.py paths.py config.py env_loader.py bootstrap_autostart.py watchdog.py watch_mp_idb.py
+        run: python -m compileall -q wxlocal mp_capture autostart_util.py daemon_util.py paths.py config.py env_loader.py bootstrap_autostart.py watchdog.py watch_mp_idb.py
       - name: Run smoke tests
         run: pytest tests/ -q

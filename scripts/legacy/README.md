@@ -1,11 +1,18 @@
-# Personal / date-bound batch scripts
+# Legacy / local-only scripts
 
-One-off corpus migrations and enrich experiments. **Not part of the public pipeline.**
+Moved from repo root during refactor **R1**. Not part of the public pipeline.
 
-During OSS prep, ad-hoc scripts that referenced private contact names or fixed paths were removed from the repo root. Production entry points:
+| Pattern | Examples |
+|---------|----------|
+| Debug | `debug_*.py` |
+| Old key scanners | `scan_keys.py`, `login_scan.py`, `test_*.py` |
+| One-offs | `fetch_full_content.py`, `parse_merged.py`, `find_contact.py` |
+| Scratch | `_check_*.py`, `_print_*.py`, `_sample_*.py` |
+
+Production entry points remain at repo root (shims until **R4**):
 
 - `watch_mp_idb.py` — mp-scroll
 - `watchdog.py` — chat-watch
-- `archive_ninjasin_delta.py` — incremental archive
+- `bootstrap_autostart.py` — login autostart
 
-If you still need old batch scripts locally, recover them from your own backup or git history before the OSS cleanup.
+Recover deleted local scripts from git history before OSS cleanup if needed.

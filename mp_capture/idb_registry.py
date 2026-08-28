@@ -10,12 +10,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from export_mp_dev import fetch_http_body
+from wxlocal.shared.dedup import dedup_key, load_known_keys
+from wxlocal.shared.http_fetch import fetch_http_body
+from wxlocal.shared.mp_filter import is_dev_related
 from mp_capture.body_extract import extract_body_from_html
 from mp_capture.feed_ocr import scan_visible_feed, title_registry_key
 from mp_capture.idb_reader import article_key, scan_live, url_has_sn
-from ninjasin_dedup import dedup_key, load_known_keys
-from mp_dev_filter import is_dev_related
 from paths import (
     MP_CAPTURE_EXPORT,
     MP_CAPTURE_REGISTRY,

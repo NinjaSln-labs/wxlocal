@@ -27,19 +27,14 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from mp_capture.body_extract import extract_body_from_html
-from mp_dev_filter import is_dev_related
+from wxlocal.shared.http_fetch import UA, fetch_http_body
+from wxlocal.shared.mp_filter import is_dev_related
 from paths import MP_DEV_ARCHIVE, MP_DEV_EXPORT, MP_DEV_KB, ensure_decrypted_dir, ensure_mp_dev_dirs
 
 _d = ensure_decrypted_dir()
 BIZ_DB = _d / "message" / "biz_message_0.db"
 CONTACT_DB = _d / "contact" / "contact.db"
 SESSION_DB = _d / "session" / "session.db"
-
-UA = (
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-    "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 "
-    "MicroMessenger/8.0.49 NetType/WIFI Language/zh_CN"
-)
 
 
 def decompress(data) -> str:
@@ -187,32 +182,6 @@ def filter_dev_items(items: list[dict]) -> tuple[list[dict], list[dict]]:
     for j, it in enumerate(kept, 1):
         it["dev_index"] = j
     return kept, dropped
-
-
-def fetch_http_body(url: str, opener: urllib.request.OpenerDirector | None = None) -> str:
-    if not url or "mp.weixin.qq.com" not in url:
-        return ""
-    urls = [url]
-    q = urllib.parse.urlparse(url).query
-    p = urllib.parse.parse_qs(q)
-    biz, mid, sn = (p.get("__biz") or [""])[0], (p.get("mid") or [""])[0], (p.get("sn") or [""])[0]
-    idx = (p.get("idx") or ["1"])[0]
-    if biz and mid and sn:
-        std = f"https://mp.weixin.qq.com/s?__biz={biz}&mid={mid}&idx={idx}&sn={sn}"
-        urls.append(std)
-    open_fn = opener.open if opener is not None else urllib.request.urlopen
-    for u in urls:
-        try:
-            req = urllib.request.Request(u, headers={"User-Agent": UA, "Referer": "https://mp.weixin.qq.com/"})
-            with open_fn(req, timeout=25) as resp:
-                page = resp.read().decode("utf-8", errors="replace")
-            body = extract_body_from_html(page)
-            if len(body) > 80:
-                return body
-        except Exception:
-            continue
-        time.sleep(0.5)
-    return ""
 
 
 def build_md(meta: dict, items: list[dict]) -> str:
