@@ -156,37 +156,16 @@ wxlocal/
 
 - `wxlocal/core/{wcdb,keys,decrypt,messages,key_parser,subprocess_win}.py`
 - 根目录对应文件保留 shim；`web`/`export`/`pipelines` 已改 `wxlocal.core.*`
-- `tests/test_core_imports.py`；chat-watch 仍需 `_legacy` 仅因 `export_contact`（R8）
+- `tests/test_core_imports.py`；R8 后 chat-watch daemon 不再依赖 `_legacy` / 根 `export_contact`
 
 ---
 
-### R8 — pipelines + export 包化（3–4 天）
+### R8 — pipelines + export 包化（3–4 天）✅
 
-**目标**：archive、export_contact、各 `export_*.py` 迁入包内；chat-watch 闭环在 `wxlocal.pipelines.chat_watch`。
-
-| 模块 | 源 | 目标 |
-|------|-----|------|
-| 联系人导出 | `export_contact.py` | `wxlocal/pipelines/chat_watch/export.py` |
-| 增量归档 | `archive_ninjasin_delta.py` | `wxlocal/pipelines/chat_watch/archive.py` |
-| 消息导出 | `export_messages.py` | `wxlocal/export/messages.py` |
-| mp 导出 | `export_mp_dev/idb/capture.py` | `wxlocal/export/mp_*.py` |
-| CLI 聚合 | — | `wxlocal/export/__init__.py` 暴露 main |
-| 编排 | `mp_registry.py` | `wxlocal/export/mp_registry.py` 或 `scripts/ops/` |
-
-| mp-scroll 工具 | 源 | 目标 |
-|----------------|-----|------|
-| 批处理补正文 | `enrich_bodies_batch.py` | `scripts/ops/enrich_bodies_batch.py` |
-| 标题重扫 | `rescan_titles.py` | `scripts/ops/rescan_titles.py` |
-| 状态重置 | `reset_mp_scroll.py` | `scripts/ops/reset_mp_scroll.py` |
-| IDB 恢复 | `restore_idb_backup.py` | `scripts/ops/restore_idb_backup.py` |
-| mitm 状态 | `mp_capture_status.py` | `scripts/ops/mp_capture_status.py` |
-| mitm 启动 | `run_mp_capture.py` | `wxlocal/pipelines/mp_capture/run.py` |
-
-**验收**：
-
-- [ ] `chat_watch/daemon.py` 无 `from archive_ninjasin_delta`  
-- [ ] 根目录 `.py` ≤ 15（仅剩 shim + bootstrap shim）  
-- [ ] T2/T3 全绿  
+- `wxlocal/pipelines/chat_watch/{export,archive}.py`
+- `wxlocal/export/{messages,mp_dev,mp_idb,mp_capture_export,mp_registry}.py`
+- `scripts/ops/` — enrich / rescan / reset / restore / mp_capture_status / run_mp_capture
+- 根目录对应文件保留 shim；daemon 不再 `_legacy` / 根 `export_contact`
 
 ---
 

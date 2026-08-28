@@ -118,7 +118,7 @@ T4 doc links OK
 |------|------|--------|------|
 | R6 | ninjasin/mp_idb 命名收敛 · bootstrap 迁包 · 删冗余 bat/vbs | P0 | ✅ |
 | R7 | `wxlocal/core`（wcdb · decrypt · keys）· 去 `_legacy` | P0 | ✅ |
-| R8 | pipelines/export 迁包 · ops 脚本 → `scripts/ops/` | P1 | ⏳ |
+| R8 | pipelines/export 迁包 · ops 脚本 → `scripts/ops/` | P1 | ✅ |
 | R9 | `mp_capture` 归位（可选） | P2 | ⏳ |
 | R10 | 删根 shim · 根目录 0 `.py` · v0.2.0 | P1 | ⏳ |
 

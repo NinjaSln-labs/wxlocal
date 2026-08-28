@@ -15,11 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-from wxlocal._legacy import bootstrap_legacy_imports
-
-bootstrap_legacy_imports()
-
-from export_contact import export_contact
+from wxlocal.pipelines.chat_watch.export import export_contact
 
 from wxlocal.config._root import PROJECT_ROOT
 from wxlocal.config.config import DATA_ROOT, OUTPUT_DIR, find_user_db_storage
@@ -40,7 +36,6 @@ from wxlocal.shared.daemon import acquire_pid_lock, install_excepthook, setup_da
 KEYS_FILE = OUTPUT_ROOT / "all_keys.json"
 LOG_FILE = OUTPUT_ROOT / "chat_watch.log"
 WCDB_TOOL = PROJECT_ROOT / "vendor" / "wcdb-key-tool-main" / "wcdb_key_tool_windows.py"
-DELTA_SCRIPT = PROJECT_ROOT / "archive_ninjasin_delta.py"
 PID_FILE = CHAT_WATCH_PID
 LEGACY_PID_FILES = (LEGACY_CHAT_WATCH_PID,)
 
@@ -128,12 +123,9 @@ def run_export_ninjasin(logger: logging.Logger) -> bool:
     return True
 
 
-def run_ninjasin_delta_archive(logger: logging.Logger) -> bool:
-    if not DELTA_SCRIPT.is_file():
-        logger.warning("未找到增量归档脚本: %s", DELTA_SCRIPT)
-        return False
+def run_chat_watch_delta_archive(logger: logging.Logger) -> bool:
     try:
-        from archive_ninjasin_delta import main as archive_delta_main
+        from wxlocal.pipelines.chat_watch.archive import main as archive_delta_main
 
         stats = archive_delta_main()
         logger.info(
@@ -192,7 +184,7 @@ def sync_once(logger: logging.Logger, force_extract: bool = False) -> bool:
         return False
     if not run_export_ninjasin(logger):
         return False
-    run_ninjasin_delta_archive(logger)
+    run_chat_watch_delta_archive(logger)
     return True
 
 

@@ -43,8 +43,8 @@
 | 文件 | 目标 | 阶段 |
 |------|------|------|
 | `bootstrap_ninjasin_watch.py` 🔀 | → `bootstrap_chat_watch.py` | R6 ✅ |
-| `archive_ninjasin_delta.py` | `wxlocal/pipelines/chat_watch/archive.py` | R8 📦 |
-| `export_contact.py` | `wxlocal/pipelines/chat_watch/export.py` | R8 📦 |
+| `archive_ninjasin_delta.py` 🔀 | `wxlocal/pipelines/chat_watch/archive.py` | R8 ✅ |
+| `export_contact.py` 🔀 | `wxlocal/pipelines/chat_watch/export.py` | R8 ✅ |
 
 ---
 
@@ -53,8 +53,8 @@
 | 文件 | 目标 | 阶段 |
 |------|------|------|
 | `bootstrap_mp_watch.py` 🔀 | → `bootstrap_mp_scroll.py` | R6 ✅ |
-| `run_mp_capture.py` | `wxlocal/pipelines/mp_capture/run.py` | R8 📦 |
-| `mp_registry.py` | `wxlocal/export/mp_registry.py` | R8 📦 |
+| `run_mp_capture.py` 🔀 | `scripts/ops/run_mp_capture.py`（包内归位见 R9） | R8 ✅ |
+| `mp_registry.py` 🔀 | `wxlocal/export/mp_registry.py` | R8 ✅ |
 | `mp_capture/` 目录 | `wxlocal/pipelines/mp_scroll/capture/` 或保留 | R9 📦 |
 
 ---
@@ -63,10 +63,10 @@
 
 | 文件 | 目标 | 阶段 |
 |------|------|------|
-| `export_messages.py` | `wxlocal/export/messages.py` | R8 📦 |
-| `export_mp_dev.py` | `wxlocal/export/mp_dev.py` | R8 📦 |
-| `export_mp_idb.py` | `wxlocal/export/mp_idb.py` | R8 📦 |
-| `export_mp_capture.py` | `wxlocal/export/mp_capture.py` | R8 📦 |
+| `export_messages.py` 🔀 | `wxlocal/export/messages.py` | R8 ✅ |
+| `export_mp_dev.py` 🔀 | `wxlocal/export/mp_dev.py` | R8 ✅ |
+| `export_mp_idb.py` 🔀 | `wxlocal/export/mp_idb.py` | R8 ✅ |
+| `export_mp_capture.py` 🔀 | `wxlocal/export/mp_capture_export.py` | R8 ✅ |
 
 ---
 
@@ -83,11 +83,11 @@
 
 | 文件 | 目标 | 阶段 |
 |------|------|------|
-| `enrich_bodies_batch.py` | `scripts/ops/enrich_bodies_batch.py` | R8 📁 |
-| `rescan_titles.py` | `scripts/ops/rescan_titles.py` | R8 📁 |
-| `reset_mp_scroll.py` | `scripts/ops/reset_mp_scroll.py` | R8 📁 |
-| `restore_idb_backup.py` | `scripts/ops/restore_idb_backup.py` | R8 📁 |
-| `mp_capture_status.py` | `scripts/ops/mp_capture_status.py` | R8 📁 |
+| `enrich_bodies_batch.py` 🔀 | `scripts/ops/enrich_bodies_batch.py` | R8 ✅ |
+| `rescan_titles.py` 🔀 | `scripts/ops/rescan_titles.py` | R8 ✅ |
+| `reset_mp_scroll.py` 🔀 | `scripts/ops/reset_mp_scroll.py` | R8 ✅ |
+| `restore_idb_backup.py` 🔀 | `scripts/ops/restore_idb_backup.py` | R8 ✅ |
+| `mp_capture_status.py` 🔀 | `scripts/ops/mp_capture_status.py` | R8 ✅ |
 
 ---
 
