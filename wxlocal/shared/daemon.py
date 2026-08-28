@@ -21,9 +21,36 @@ def pid_running(pid: int) -> bool:
     return True
 
 
-def acquire_pid_lock(pid_file: Path, *, prepare: Callable[[], None] | None = None) -> bool:
+def migrate_pid_file(canonical: Path, *legacy: Path) -> None:
+    """Prefer canonical pid file; rename legacy file if present."""
+    if canonical.is_file():
+        return
+    for old in legacy:
+        if not old.is_file():
+            continue
+        try:
+            import shutil
+
+            shutil.move(str(old), str(canonical))
+        except OSError:
+            try:
+                canonical.parent.mkdir(parents=True, exist_ok=True)
+                canonical.write_text(old.read_text(encoding="utf-8"), encoding="utf-8")
+                old.unlink(missing_ok=True)
+            except OSError:
+                pass
+        break
+
+
+def acquire_pid_lock(
+    pid_file: Path,
+    *,
+    legacy_pid_files: Sequence[Path] = (),
+    prepare: Callable[[], None] | None = None,
+) -> bool:
     if prepare is not None:
         prepare()
+    migrate_pid_file(pid_file, *legacy_pid_files)
     if pid_file.is_file():
         try:
             old_pid = int(pid_file.read_text(encoding="utf-8").strip())
@@ -31,8 +58,12 @@ def acquire_pid_lock(pid_file: Path, *, prepare: Callable[[], None] | None = Non
             old_pid = 0
         if pid_running(old_pid):
             return False
+    pid_file.parent.mkdir(parents=True, exist_ok=True)
     pid_file.write_text(str(os.getpid()), encoding="utf-8")
     atexit.register(release_pid_lock, pid_file)
+    for old in legacy_pid_files:
+        if old.is_file() and old != pid_file:
+            old.unlink(missing_ok=True)
     return True
 
 

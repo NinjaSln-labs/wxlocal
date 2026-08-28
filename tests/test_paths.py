@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture
 def paths_module(monkeypatch, tmp_path):
-    import wxlocal.config.paths as paths
+    import wxlocal.config.paths.runtime as paths
 
     out = tmp_path / "output"
     canonical = out / "decrypted"

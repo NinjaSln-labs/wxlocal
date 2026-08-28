@@ -88,7 +88,7 @@ T4 doc links OK
 
 ---
 
-## Phase R — 结构重构（进行中）
+## Phase R — 结构重构 ✅
 
 详见 **[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md)** · 文件清单 **[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)**
 
@@ -99,9 +99,9 @@ T4 doc links OK
 | R2 | `wxlocal/shared` 打断反向依赖 | ✅ |
 | R3 | 启动器合并 | ✅ |
 | R4 | 包化 + console_scripts | ✅ |
-| R5 | 命名收尾 + 删 shim | ⏳ |
+| R5 | 命名收尾 + ARCHITECTURE | ✅ |
 
----
+**Phase R — 完成**（详见 [REFACTOR_PLAN.md](REFACTOR_PLAN.md)、[ARCHITECTURE.md](ARCHITECTURE.md)）
 
 ## Phase E — wenjin 侧（非本仓，不处理）
 

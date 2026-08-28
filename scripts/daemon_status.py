@@ -8,20 +8,28 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from wxlocal.shared.daemon import pid_running
-from paths import MP_SCROLL_STATE_DIR, NINJASIN_STATE_DIR, OUTPUT_DIR
+from wxlocal.config.paths import (
+    CHAT_WATCH_PID,
+    LEGACY_CHAT_WATCH_PID,
+    LEGACY_MP_SCROLL_PID,
+    MP_SCROLL_PID,
+    OUTPUT_DIR,
+)
+from wxlocal.shared.daemon import migrate_pid_file, pid_running
 
 _PIPELINES = {
     "mp-scroll": {
         "label": "mp-scroll (IndexedDB watch)",
-        "patterns": ("bootstrap_mp_watch", "watch_mp_idb.py"),
-        "pid_file": MP_SCROLL_STATE_DIR / "mp_idb_watch.pid",
+        "patterns": ("bootstrap_mp_watch", "watch_mp_idb.py", "wxlocal-mp-scroll", "mp_scroll.daemon"),
+        "pid_file": MP_SCROLL_PID,
+        "legacy_pid_files": (LEGACY_MP_SCROLL_PID,),
         "process_pattern": "watch_mp_idb.py",
     },
     "chat-watch": {
         "label": "chat-watch (contact export)",
-        "patterns": ("bootstrap_ninjasin_watch", "watchdog.py"),
-        "pid_file": NINJASIN_STATE_DIR / "ninjasin_watch.pid",
+        "patterns": ("bootstrap_ninjasin_watch", "watchdog.py", "wxlocal-watch", "chat_watch.daemon"),
+        "pid_file": CHAT_WATCH_PID,
+        "legacy_pid_files": (LEGACY_CHAT_WATCH_PID,),
         "process_pattern": "watchdog.py",
     },
 }
@@ -32,7 +40,8 @@ _LEGACY_PID_FILES = (
 )
 
 
-def _read_pid(pid_file: Path) -> int | None:
+def _read_pid(pid_file: Path, *legacy: Path) -> int | None:
+    migrate_pid_file(pid_file, *legacy)
     if not pid_file.is_file():
         return None
     try:
@@ -41,9 +50,9 @@ def _read_pid(pid_file: Path) -> int | None:
         return None
 
 
-def _format_daemon(name: str, pid_file: Path, pattern: str) -> None:
+def _format_daemon(name: str, pid_file: Path, pattern: str, *legacy_pid: Path) -> None:
     print(f"--- {name} ---")
-    pid = _read_pid(pid_file)
+    pid = _read_pid(pid_file, *legacy_pid)
     if pid is not None:
         running = pid_running(pid)
         state = "running" if running else "stale"
@@ -86,9 +95,9 @@ def stop_pipelines(only: str = "all") -> None:
             continue
         for pattern in cfg["patterns"]:
             kill_processes_matching(pattern)
-        pid_file = cfg["pid_file"]
-        if pid_file.is_file():
-            pid_file.unlink(missing_ok=True)
+        for pid_path in (cfg["pid_file"], *cfg.get("legacy_pid_files", ())):
+            if pid_path.is_file():
+                pid_path.unlink(missing_ok=True)
     if only in ("all", "", "mp-scroll"):
         for legacy in _LEGACY_PID_FILES:
             if legacy.is_file():
@@ -98,10 +107,10 @@ def stop_pipelines(only: str = "all") -> None:
 def show_status(only: str = "all") -> None:
     if only in ("all", "mp-scroll"):
         cfg = _PIPELINES["mp-scroll"]
-        _format_daemon(cfg["label"], cfg["pid_file"], cfg["process_pattern"])
+        _format_daemon(cfg["label"], cfg["pid_file"], cfg["process_pattern"], *cfg["legacy_pid_files"])
     if only in ("all", "chat-watch"):
         cfg = _PIPELINES["chat-watch"]
-        _format_daemon(cfg["label"], cfg["pid_file"], cfg["process_pattern"])
+        _format_daemon(cfg["label"], cfg["pid_file"], cfg["process_pattern"], *cfg["legacy_pid_files"])
     print(f"repo: {ROOT}")
     print(f"logs: {OUTPUT_DIR}")
 

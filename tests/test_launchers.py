@@ -17,14 +17,15 @@ CANONICAL = [
     "launchers/win/run_daemon.vbs",
 ]
 
-LEGACY_FORWARDS = [
+REMOVED_LEGACY = [
     "run_ninjasin_watchdog.bat",
     "run_mp_idb_watch.bat",
     "launch_ninjasin_watchdog.bat",
     "launch_mp_idb_watch.bat",
+    "run_daemon.bat",
     "stop_wechat_reader.bat",
     "status_wechat_reader.bat",
-    "WeChatReaderAutostart.vbs",
+    "setup_mp_idb_autostart.bat",
 ]
 
 
@@ -33,9 +34,9 @@ def test_canonical_launchers_exist():
     assert not missing, f"missing canonical launchers: {missing}"
 
 
-def test_legacy_launchers_forward():
-    missing = [name for name in LEGACY_FORWARDS if not (ROOT / name).is_file()]
-    assert not missing, f"missing legacy launcher shims: {missing}"
+def test_removed_legacy_launchers_gone():
+    still_present = [name for name in REMOVED_LEGACY if (ROOT / name).is_file()]
+    assert not still_present, f"legacy launchers should be removed: {still_present}"
 
 
 def test_stop_bats_use_daemon_status():

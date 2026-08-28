@@ -31,13 +31,19 @@ Filter / archive rules can live in consumer KB (`config/*.json`) — see downstr
 
 ```
 wxlocal/
-├── mp_capture/
+├── wxlocal/              # installable package (config, pipelines, shared, web, export)
+├── mp_capture/           # IndexedDB / OCR / registry
+├── launchers/win/        # VBS bootstrap
+├── scripts/              # verify, daemon_status, ops
 ├── vendor/wcdb-key-tool-main/
-├── docs/
-├── scripts/research/
+├── docs/                 # STANDALONE, ARCHITECTURE, REFACTOR_PLAN
 ├── examples/chat-watch/
-└── paths.py
+├── run_chat_watch.bat    # canonical Windows entrypoints
+├── run_mp_scroll.bat
+└── output/               # runtime (gitignored): keys, logs, decrypt cache
 ```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for module dependencies.
 
 ## Autostart
 

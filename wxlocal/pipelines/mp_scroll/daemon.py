@@ -16,23 +16,33 @@ import time
 
 from mp_capture.idb_registry import run_pipeline
 
-from wxlocal.config.paths import MP_SCROLL_ERROR_LOG, MP_SCROLL_STATE_DIR, MP_SCROLL_WATCH_LOG, OUTPUT_DIR, ensure_mp_scroll_dirs
+from wxlocal.config.paths import (
+    LEGACY_MP_SCROLL_PID,
+    LEGACY_MP_SCROLL_WATCH_LOG,
+    MP_SCROLL_ERROR_LOG,
+    MP_SCROLL_PID,
+    MP_SCROLL_WATCH_LOG,
+    OUTPUT_DIR,
+    ensure_mp_scroll_dirs,
+)
 from wxlocal.shared.daemon import acquire_pid_lock, install_excepthook, setup_daemon_logging
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-STATE_DIR = MP_SCROLL_STATE_DIR
-LOG_FILE = OUTPUT_DIR / "mp_idb_watch.log"
-PID_FILE = STATE_DIR / "mp_idb_watch.pid"
+STATE_DIR = MP_SCROLL_PID.parent
+LOG_FILE = OUTPUT_DIR / "mp_scroll.log"
+PID_FILE = MP_SCROLL_PID
+LEGACY_PID_FILES = (LEGACY_MP_SCROLL_PID,)
 DEFAULT_INTERVAL = int(os.environ.get("MP_SCROLL_INTERVAL", "15"))
 DEFAULT_OCR_EVERY = int(os.environ.get("MP_SCROLL_OCR_EVERY", "8"))
 
 
 def setup_logging() -> logging.Logger:
+    log_targets = (LOG_FILE, MP_SCROLL_WATCH_LOG, LEGACY_MP_SCROLL_WATCH_LOG)
     return setup_daemon_logging(
         "watch_mp_idb",
-        (LOG_FILE, MP_SCROLL_WATCH_LOG),
+        log_targets,
         error_log=MP_SCROLL_ERROR_LOG,
         prepare=lambda: (OUTPUT_DIR.mkdir(parents=True, exist_ok=True), ensure_mp_scroll_dirs()),
     )
@@ -89,7 +99,9 @@ def main() -> None:
     logger = setup_logging()
     install_excepthook(logger)
 
-    if not args.once and not acquire_pid_lock(PID_FILE, prepare=ensure_mp_scroll_dirs):
+    if not args.once and not acquire_pid_lock(
+        PID_FILE, legacy_pid_files=LEGACY_PID_FILES, prepare=ensure_mp_scroll_dirs
+    ):
         logger.info("already running (pid file: %s)", PID_FILE)
         return
 

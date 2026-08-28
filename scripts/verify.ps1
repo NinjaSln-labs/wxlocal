@@ -43,6 +43,7 @@ $docs = @(
     "docs/MP_CAPTURE.md",
     "docs/WECHAT_4.1.13_RESEARCH.md",
     "docs/LOCAL_SETUP.example.md",
+    "docs/ARCHITECTURE.md",
     "docs/DEV_PLAN.md"
 )
 foreach ($rel in $docs) {

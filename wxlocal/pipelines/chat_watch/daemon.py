@@ -26,9 +26,10 @@ from wcdb_bridge import run_decrypt, run_extract
 from wxlocal.config._root import PROJECT_ROOT
 from wxlocal.config.config import DATA_ROOT, OUTPUT_DIR, find_user_db_storage
 from wxlocal.config.paths import (
+    CHAT_WATCH_PID,
+    LEGACY_CHAT_WATCH_PID,
     NINJASIN_DAEMON_LOG,
     NINJASIN_ERROR_LOG,
-    NINJASIN_STATE_DIR,
     OUTPUT_DIR as OUTPUT_ROOT,
     WATCH_CONTACT,
     ensure_decrypted_dir,
@@ -37,10 +38,11 @@ from wxlocal.config.paths import (
 from wxlocal.shared.daemon import acquire_pid_lock, install_excepthook, setup_daemon_logging
 
 KEYS_FILE = OUTPUT_ROOT / "all_keys.json"
-LOG_FILE = OUTPUT_ROOT / "daemon.log"
+LOG_FILE = OUTPUT_ROOT / "chat_watch.log"
 WCDB_TOOL = PROJECT_ROOT / "vendor" / "wcdb-key-tool-main" / "wcdb_key_tool_windows.py"
 DELTA_SCRIPT = PROJECT_ROOT / "archive_ninjasin_delta.py"
-PID_FILE = NINJASIN_STATE_DIR / "ninjasin_watch.pid"
+PID_FILE = CHAT_WATCH_PID
+LEGACY_PID_FILES = (LEGACY_CHAT_WATCH_PID,)
 
 DEFAULT_INTERVAL = int(os.environ.get("WECHAT_WATCH_INTERVAL", "60"))
 WECHAT_WAIT_INTERVAL = 15
@@ -204,7 +206,9 @@ def main() -> None:
     logger = setup_logging()
     install_excepthook(logger)
 
-    if not args.once and not acquire_pid_lock(PID_FILE, prepare=ensure_kb_dirs):
+    if not args.once and not acquire_pid_lock(
+        PID_FILE, legacy_pid_files=LEGACY_PID_FILES, prepare=ensure_kb_dirs
+    ):
         logger.info("ninjasin-watch already running (pid file: %s)", PID_FILE)
         return
 

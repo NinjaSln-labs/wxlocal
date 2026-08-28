@@ -7,7 +7,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ENV_EXAMPLE = REPO_ROOT / ".env.example"
 
 RUNTIME_FILES = [
-    REPO_ROOT / "wxlocal" / "config" / "paths.py",
+    REPO_ROOT / "wxlocal" / "config" / "paths" / "kb.py",
+    REPO_ROOT / "wxlocal" / "config" / "paths" / "radium.py",
+    REPO_ROOT / "wxlocal" / "config" / "paths" / "chat_watch.py",
+    REPO_ROOT / "wxlocal" / "config" / "paths" / "mp_scroll.py",
     REPO_ROOT / "wxlocal" / "config" / "config.py",
     REPO_ROOT / "wxlocal" / "pipelines" / "chat_watch" / "daemon.py",
     REPO_ROOT / "wxlocal" / "pipelines" / "mp_scroll" / "daemon.py",

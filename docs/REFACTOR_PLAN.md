@@ -153,20 +153,14 @@ mp_capture/idb_registry.py  ──import──►  export_mp_dev.py      (根目
 
 ---
 
-### R5 — 收尾与契约固化（1 天）
+### R5 — 收尾与契约固化（1 天）✅
 
-| 动作 | 说明 |
-|------|------|
-| 拆分 `paths.py` | `wxlocal/config/paths/chat_watch.py` 等；`paths.py` 仅 re-export |
-| 统一 PID/日志命名 | `chat_watch.pid`, `mp_scroll.pid`；旧 pid 文件名迁移脚本 |
-| 删除已转发满 1 release 的 legacy launcher | major bump 或 CHANGELOG 标明 |
-| 文档 | `docs/STANDALONE.md` 更新目录树；`docs/ARCHITECTURE.md` 新增依赖图 |
-| 测试 | `tests/test_launchers.py` 检查关键 bat 存在；import-linter 规则（可选） |
+- `wxlocal/config/paths/` 按 pipeline 拆分；根 `paths.py` shim 保留
+- PID/日志统一：`chat_watch.pid`、`mp_scroll.pid`；启动时迁移旧 pid 文件
+- 删除 R3 遗留转发 bat（保留 `WeChatReaderAutostart.vbs` → `WxLocalAutostart.vbs`）
+- `docs/ARCHITECTURE.md` 依赖图；`tests/test_pid_files.py`
 
-**验收**：
-- 根目录生产 `.py` ≤ 10（全是 shim + `main.py` 可选保留）
-- `scripts/verify.ps1` 全绿
-- DEV_PLAN Phase R 标 ✅
+**Phase R 完成。**
 
 ---
 
