@@ -41,8 +41,12 @@ wxlocal/
 
 ## Autostart
 
-- `WxLocalAutostart.vbs` + Startup `wxlocal.path`
-- `setup_wxlocal_autostart.ps1`
+Login flow: `WxLocalAutostart.vbs` → `bootstrap_autostart.py` (waits for `WECHAT_KB_ROOT` / `WECHAT_DATA_ROOT` drives) → spawns `bootstrap_mp_watch.py` + `bootstrap_ninjasin_watch.py`.
+
+- Startup folder: `WxLocalAutostart.vbs` + `wxlocal.path`
+- Install: `setup_wxlocal_autostart.bat`
+- Logs: `output/autostart_launch.log`, `output/autostart_bootstrap_*.log`
+- `WXLOCAL_PYTHON` in `.env` is used (VBS alone cannot read `.env`)
 
 Legacy `WeChatReaderAutostart.vbs` / `wechat-reader.path` supported during migration.
 

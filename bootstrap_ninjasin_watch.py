@@ -1,4 +1,4 @@
-"""Bootstrap: base pythonw + venv site-packages, single process."""
+"""Bootstrap: chat-watch daemon (pythonw + venv)."""
 from __future__ import annotations
 
 import os
@@ -13,13 +13,22 @@ if SITE.is_dir() and str(SITE) not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from env_loader import load_env
 
-load_env()
+def main() -> None:
+    from autostart_util import append_autostart_log
+    from env_loader import load_env
+    from subprocess_win import kill_processes_matching
 
-from subprocess_win import kill_processes_matching
+    load_env()
+    append_autostart_log("bootstrap_ninjasin_watch starting")
+    try:
+        kill_processes_matching("bootstrap_ninjasin_watch.py", exclude_pid=os.getpid())
+        kill_processes_matching("watchdog.py", exclude_pid=os.getpid())
+        runpy.run_module("watchdog", run_name="__main__")
+    except Exception as exc:
+        append_autostart_log(f"bootstrap_ninjasin_watch FAILED: {exc!r}")
+        raise
 
-kill_processes_matching("bootstrap_ninjasin_watch.py", exclude_pid=os.getpid())
-kill_processes_matching("watchdog.py", exclude_pid=os.getpid())
 
-runpy.run_module("watchdog", run_name="__main__")
+if __name__ == "__main__":
+    main()

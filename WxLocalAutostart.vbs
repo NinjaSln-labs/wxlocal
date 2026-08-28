@@ -66,6 +66,5 @@ End If
 
 sh.CurrentDirectory = root
 sh.Environment("Process")("PYTHONIOENCODING") = "utf-8"
-AppendLaunchLog "starting bootstrap mp + chat-watch via " & pyw & " root=" & root
-sh.Run """" & pyw & """ """ & root & "\bootstrap_mp_watch.py""", 0, False
-sh.Run """" & pyw & """ """ & root & "\bootstrap_ninjasin_watch.py""", 0, False
+AppendLaunchLog "starting bootstrap_autostart via " & pyw & " root=" & root
+sh.Run """" & pyw & """ """ & root & "\bootstrap_autostart.py""", 0, False
