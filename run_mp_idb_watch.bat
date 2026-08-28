@@ -1,3 +1,4 @@
 @echo off
+REM Canonical name — mp-scroll daemon
 cd /d "%~dp0"
-wscript //nologo "%~dp0run_mp_idb_watch.vbs"
+call "%~dp0run_mp_scroll.bat" %*

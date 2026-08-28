@@ -1,5 +1,5 @@
 @echo off
-rem Legacy wrapper — detach via VBS (no lingering cmd)
+REM Legacy wrapper — use run_mp_scroll.bat
 cd /d "%~dp0"
-wscript //nologo "%~dp0run_mp_idb_watch.vbs"
+call "%~dp0run_mp_scroll.bat"
 exit /b 0

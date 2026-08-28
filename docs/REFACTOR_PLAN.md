@@ -134,32 +134,12 @@ mp_capture/idb_registry.py  ──import──►  export_mp_dev.py      (根目
 
 ---
 
-### R3 — 统一启动器（1–2 天）
+### R3 — 统一启动器（1–2 天）✅
 
-**目标**：33 个 launcher → ~12 个，逻辑单点维护。
-
-| 动作 | 说明 |
-|------|------|
-| 新建 `launchers/win/_common.vbs` 或 `scripts/ops/launcher.ps1` | `ResolveProjectRoot`, `ResolvePythonw`, `AppendLaunchLog` |
-| 合并 bootstrap | `wxlocal/pipelines/*/bootstrap.py` 或参数化 `bootstrap_daemon.py --module watchdog` |
-| 废弃别名（保留转发 1 release） | `launch_*` → `run_*`；`WeChatReaderAutostart.vbs` → 调用 `WxLocalAutostart.vbs` |
-| 统一 stop | `stop_wxlocal.bat` 内调 `scripts/daemon_status.py` 取 PID，或 Python `wxlocal.ops.stop` |
-| 删除硬编码 `F:\` | 所有 stop/status bat 只通过 `paths.py` / `daemon_status.py` |
-
-**根目录保留的 bat**（用户-facing）：
-```
-run_extract.bat
-run_web.bat
-run_chat_watch.bat      # 新名，旧 run_ninjasin_watchdog.bat 转发
-run_mp_scroll.bat       # 新名，旧 run_mp_idb_watch.bat 转发
-stop_wxlocal.bat
-status_wxlocal.bat
-setup_wxlocal_autostart.bat
-```
-
-**验收**：
-- 自启链路手测：登录 → 两 daemon 起来 → `status_wxlocal.bat` 有 PID
-- T2/T3 仍过
+- `launchers/win/run_daemon.vbs` — 参数化 bootstrap 启动（ResolveProjectRoot / pythonw / log）
+- 规范入口：`run_chat_watch.bat`、`run_mp_scroll.bat`；旧名保留转发
+- `scripts/daemon_status.py stop` — 统一 stop，无 `F:\` 硬编码
+- `tests/test_launchers.py` — 入口存在性 + stop bat 契约
 
 ---
 

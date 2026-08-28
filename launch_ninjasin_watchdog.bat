@@ -1,5 +1,5 @@
 @echo off
-rem Legacy wrapper — detach via VBS (no lingering cmd)
+REM Legacy wrapper — use run_chat_watch.bat
 cd /d "%~dp0"
-wscript //nologo "%~dp0run_ninjasin_watchdog.vbs"
+call "%~dp0run_chat_watch.bat"
 exit /b 0

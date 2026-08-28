@@ -1,3 +1,4 @@
 @echo off
+REM Canonical name — chat-watch daemon
 cd /d "%~dp0"
-wscript //nologo "%~dp0run_ninjasin_watchdog.vbs"
+call "%~dp0run_chat_watch.bat" %*
