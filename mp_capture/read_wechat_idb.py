@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from mp_capture.idb_reader import scan_live
-from paths import MP_CAPTURE_EXPORT, ensure_mp_capture_dirs
+from wxlocal.config.paths import MP_CAPTURE_EXPORT, ensure_mp_capture_dirs
 
 OUT = MP_CAPTURE_EXPORT / "idb_articles.json"
 

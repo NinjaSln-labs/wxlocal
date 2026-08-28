@@ -7,7 +7,7 @@ import os
 import re
 from pathlib import Path
 
-from paths import MP_SCROLL_OCR_DIR, ensure_mp_scroll_dirs
+from wxlocal.config.paths import MP_SCROLL_OCR_DIR, ensure_mp_scroll_dirs
 
 OCR_DIR = MP_SCROLL_OCR_DIR
 _OCR_ENGINE = None

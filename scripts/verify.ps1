@@ -13,7 +13,7 @@ if (-not (Test-Path $python)) {
 }
 
 Write-Host "T1 compileall..."
-& $python -m compileall -q wxlocal mp_capture autostart_util.py daemon_util.py paths.py config.py env_loader.py bootstrap_autostart.py watchdog.py watch_mp_idb.py
+& $python -m compileall -q wxlocal mp_capture env_loader.py paths.py config.py watchdog.py watch_mp_idb.py app.py main.py service.py
 if ($LASTEXITCODE -ne 0) { throw "T1 compileall failed ($LASTEXITCODE)" }
 Write-Host "  OK"
 

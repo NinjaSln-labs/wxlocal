@@ -10,8 +10,8 @@
 | Module | Entry | Purpose |
 |--------|-------|---------|
 | **Core** | `run_extract.bat`, `app.py` | Decrypt local DB, export chats, Web UI |
-| **mp-scroll** | `run_mp_scroll.bat` / `watch_mp_idb.py` | Subscription feed via IndexedDB |
-| **chat-watch** | `run_chat_watch.bat` / `watchdog.py` | Auto-sync one contact's messages |
+| **chat-watch** | `run_chat_watch.bat` / `wxlocal-watch` / `watchdog.py` | Auto-sync one contact's messages |
+| **mp-scroll** | `run_mp_scroll.bat` / `wxlocal-mp-scroll` / `watch_mp_idb.py` | Subscription feed via IndexedDB |
 | **mp-capture** | `run_mp_capture.py` | Optional mitmproxy capture |
 
 See [DISCLAIMER.md](DISCLAIMER.md) before publishing or using.

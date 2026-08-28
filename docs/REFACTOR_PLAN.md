@@ -143,38 +143,13 @@ mp_capture/idb_registry.py  ──import──►  export_mp_dev.py      (根目
 
 ---
 
-### R4 — 包化入口（2–3 天）
+### R4 — 包化入口（2–3 天）✅
 
-**目标**：`pip install -e .` 后可用 console_scripts，根目录 `.py` 变 shim。
-
-| console_script | 实现 |
-|----------------|------|
-| `wxlocal-watch` | `wxlocal.pipelines.chat_watch.daemon:main` |
-| `wxlocal-mp-scroll` | `wxlocal.pipelines.mp_scroll.daemon:main` |
-| `wxlocal-export` | `wxlocal.export.cli:main` |
-| `wxlocal-web` | `wxlocal.web.app:main` |
-
-**迁移顺序**（每个文件一对 shim）：
-1. `env_loader` + `paths` + `config` → `wxlocal.config`
-2. `wcdb_bridge`, `scan_keys_v41`, `decrypt_db`, `read_messages` → `wxlocal.core`
-3. `watchdog` + `export_contact` + `archive_ninjasin_delta` → `wxlocal.pipelines.chat_watch`
-4. `watch_mp_idb` + `mp_capture/*` 编排部分 → `wxlocal.pipelines.mp_scroll`
-5. `export_*` → `wxlocal.export`
-6. `app` + `service` → `wxlocal.web`
-
-**shim 示例**（根目录 `watchdog.py` 保留）：
-```python
-from wxlocal.pipelines.chat_watch.daemon import main
-if __name__ == "__main__":
-    main()
-```
-
-**CI 更新**：`compileall` 改为 `python -m compileall -q wxlocal mp_capture` + shim 列表。
-
-**验收**：
-- `wxlocal-watch --once` 等价 `python watchdog.py --once`
-- T1–T5 全过
-- README 快速开始可增加 `pip install -e .` 路径（可选）
+- `wxlocal/config/` — `env_loader`, `paths`, `config`（根目录 shim 保留）
+- `wxlocal/pipelines/chat_watch/daemon.py`、`mp_scroll/daemon.py` — daemon 实现
+- `wxlocal/web/`、`wxlocal/export/cli.py` — Web 与导出 CLI
+- **console_scripts**：`wxlocal-watch`, `wxlocal-mp-scroll`, `wxlocal-export`, `wxlocal-web`
+- `tests/test_console_scripts.py` — import 契约
 
 ---
 

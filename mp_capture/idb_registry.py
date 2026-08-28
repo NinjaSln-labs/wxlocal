@@ -16,7 +16,7 @@ from wxlocal.shared.mp_filter import is_dev_related
 from mp_capture.body_extract import extract_body_from_html
 from mp_capture.feed_ocr import scan_visible_feed, title_registry_key
 from mp_capture.idb_reader import article_key, scan_live, url_has_sn
-from paths import (
+from wxlocal.config.paths import (
     MP_CAPTURE_EXPORT,
     MP_CAPTURE_REGISTRY,
     MP_SCROLL_ARCHIVE,

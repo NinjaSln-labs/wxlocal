@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, MP_CAPTURE_RAW, ensure_mp_capture_dirs
+from wxlocal.config.paths import MP_CAPTURE_ARCHIVE, MP_CAPTURE_EXPORT, MP_CAPTURE_KB, MP_CAPTURE_RAW, ensure_mp_capture_dirs
 
 FLOW_AUDIT = MP_CAPTURE_EXPORT / "flow_audit.jsonl"
 

@@ -7,13 +7,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ENV_EXAMPLE = REPO_ROOT / ".env.example"
 
 RUNTIME_FILES = [
-    REPO_ROOT / "config.py",
-    REPO_ROOT / "paths.py",
-    REPO_ROOT / "watchdog.py",
-    REPO_ROOT / "watch_mp_idb.py",
+    REPO_ROOT / "wxlocal" / "config" / "paths.py",
+    REPO_ROOT / "wxlocal" / "config" / "config.py",
+    REPO_ROOT / "wxlocal" / "pipelines" / "chat_watch" / "daemon.py",
+    REPO_ROOT / "wxlocal" / "pipelines" / "mp_scroll" / "daemon.py",
+    REPO_ROOT / "launchers" / "win" / "run_daemon.vbs",
     REPO_ROOT / "WxLocalAutostart.vbs",
-    REPO_ROOT / "run_mp_idb_watch.vbs",
-    REPO_ROOT / "run_ninjasin_watchdog.vbs",
 ]
 
 

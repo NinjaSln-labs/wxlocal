@@ -25,7 +25,7 @@ DEFAULT_PROFILES = Path(os.environ.get("WECHAT_RADIUM_PROFILES", "")).expanduser
     "WECHAT_RADIUM_PROFILES", ""
 ).strip() else None
 if DEFAULT_PROFILES is None:
-    from paths import default_radium_profiles
+    from wxlocal.config.paths import default_radium_profiles
 
     DEFAULT_PROFILES = default_radium_profiles()
 IDB_NAMES = (

@@ -98,7 +98,7 @@ T4 doc links OK
 | R1 | 根目录垃圾 → `scripts/legacy/` | ✅ |
 | R2 | `wxlocal/shared` 打断反向依赖 | ✅ |
 | R3 | 启动器合并 | ✅ |
-| R4 | 包化 + console_scripts | ⏳ |
+| R4 | 包化 + console_scripts | ✅ |
 | R5 | 命名收尾 + 删 shim | ⏳ |
 
 ---

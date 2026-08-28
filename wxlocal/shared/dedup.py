@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from paths import ARCHIVE_ROOT, CURATED_DIR, NINJASIN_STATE_DIR, WATCH_CONTACT, ensure_kb_dirs
+from wxlocal.config.paths import ARCHIVE_ROOT, CURATED_DIR, NINJASIN_STATE_DIR, WATCH_CONTACT, ensure_kb_dirs
 
 PROCESSED_INDEX = NINJASIN_STATE_DIR / "processed_keys.json"
 

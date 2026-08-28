@@ -7,7 +7,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from paths import MP_SCROLL_KB
+from wxlocal.config.paths import MP_SCROLL_KB
 
 _BUILTIN = {
     "dev_keywords": [
