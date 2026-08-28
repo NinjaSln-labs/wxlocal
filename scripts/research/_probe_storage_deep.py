@@ -7,14 +7,14 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from mp_capture.idb_reader import (
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import (
     extract_cards,
     extract_titles,
     extract_urls,
     find_storage_dirs,
     read_storage_bytes,
 )
-from mp_capture.idb_registry import load_registry, proxy_ready
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import load_registry, proxy_ready
 
 PROFILES = __import__("paths").default_radium_profiles()
 MP_URL = re.compile(r"https?://mp\.weixin\.qq\.com/s[^\s\"'\\<>]{10,400}")

@@ -1,5 +1,0 @@
-"""Shim — use bootstrap_mp_scroll.py / wxlocal.pipelines.mp_scroll.bootstrap."""
-from wxlocal.pipelines.mp_scroll.bootstrap import main
-
-if __name__ == "__main__":
-    main()

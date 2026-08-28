@@ -1,6 +1,6 @@
 [project]
 name = "wxlocal"
-version = "0.1.0"
+version = "0.2.0"
 description = "wxlocal — Windows 微信 PC 本地数据采集（解密、订阅号 IndexedDB、联系人导出）。自学习/研究，见 DISCLAIMER。 | Windows tooling for WeChat PC local data: decrypt, mp-scroll, chat-watch."
 readme = "README.md"
 license = { text = "MIT" }
@@ -49,7 +49,7 @@ wxlocal-export = "wxlocal.export.cli:main"
 wxlocal-web = "wxlocal.web.app:main"
 
 [tool.setuptools.packages.find]
-include = ["wxlocal*", "mp_capture*"]
+include = ["wxlocal*"]
 
 [build-system]
 requires = ["setuptools>=68"]

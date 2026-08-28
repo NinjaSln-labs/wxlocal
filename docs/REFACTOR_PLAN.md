@@ -178,24 +178,11 @@ wxlocal/
 
 ---
 
-### R10 — 删 shim、根目录收口（1–2 天）
+### R10 — 删 shim、根目录收口（1–2 天）✅
 
-**目标**：根目录 0 个 `.py`；breaking 仅在 major 或 CHANGELOG 标明。
-
-| 动作 | 说明 |
-|------|------|
-| 删除根 shim | `watchdog.py`, `paths.py`, `config.py`, … 全部删除 |
-| 删除 | `WeChatReaderAutostart.vbs`, `setup_autostart.ps1`（若仍转发） |
-| 删除 | `ninjasin_dedup.py`, `mp_dev_filter.py`, `daemon_util.py` |
-| bat 更新 | 凡 `python watchdog.py` → `wxlocal-watch` 或 `python -m wxlocal.pipelines.chat_watch.daemon` |
-| VBS 更新 | `pythonw -m wxlocal.pipelines.chat_watch.bootstrap` |
-| 删除 `wxlocal/_legacy.py` | 无引用后 |
-| bump | `pyproject.toml` version → `0.2.0` |
-| CHANGELOG | 列出删除的 shim 与迁移表 |
-
-**根目录 `.py` 验收：0**
-
-**Launcher 验收：≤ 12 个 bat/vbs**（见 §1.3）
+- 根目录 `.py` = 0；`mp_capture/` shim 删除；`wxlocal/_legacy.py` 删除
+- launcher 改为 `pythonw -m …`；`WeChatReaderAutostart.vbs` / `setup_autostart.ps1` 删除
+- `pyproject.toml` → **0.2.0**；见根目录 `CHANGELOG.md`
 
 ---
 

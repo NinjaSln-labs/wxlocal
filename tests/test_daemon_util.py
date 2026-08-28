@@ -1,9 +1,9 @@
-"""Smoke tests for daemon_util pid lock helpers."""
+"""Smoke tests for daemon pid lock helpers."""
 from __future__ import annotations
 
 from pathlib import Path
 
-from daemon_util import acquire_pid_lock, pid_running, release_pid_lock
+from wxlocal.shared.daemon import acquire_pid_lock, pid_running, release_pid_lock
 
 
 def test_pid_running_current_process():

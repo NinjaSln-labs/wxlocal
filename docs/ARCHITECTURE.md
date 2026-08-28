@@ -1,6 +1,6 @@
 # wxlocal architecture
 
-> Module dependency and runtime layout after Phase R (R0–R5).
+> Module dependency and runtime layout after Phase R (R0–R10). **v0.2.0**: root `.py` = 0.
 
 ## Pipelines
 
@@ -17,20 +17,20 @@
 wxlocal/
 ├── config/           # env, paths (split by pipeline), WeChat data roots
 │   └── paths/        # chat_watch, mp_scroll, mp_capture, runtime, kb
+├── core/             # wcdb, decrypt, keys, messages, subprocess_win
 ├── shared/           # dedup, mp_filter, http_fetch, daemon (pid/logging)
+├── ops/              # autostart helpers + login bootstrap
 ├── pipelines/
-│   ├── chat_watch/   # contact sync daemon
-│   └── mp_scroll/    # IndexedDB scroll daemon
+│   ├── chat_watch/   # contact sync daemon + export/archive
+│   └── mp_scroll/    # IndexedDB scroll + capture/ (ex-mp_capture)
 ├── web/              # Flask app + service layer
-├── export/           # one-shot decrypt/export CLI
-└── _legacy.py        # repo-root import bootstrap (pip install)
+└── export/           # one-shot decrypt/export CLI
 
-mp_capture/           # IDB readers, OCR, registry orchestration (uses wxlocal.shared)
-scripts/              # daemon_status, verify, ops
-launchers/win/        # shared VBS bootstrap
+scripts/              # daemon_status, verify, ops, research
+launchers/win/        # shared VBS bootstrap (-m module)
 ```
 
-Root `*.py` files remain **shims** for bat/VBS and ad-hoc scripts; new code should import from `wxlocal.*`.
+Root has **0** `.py` files; entry via bat/vbs or console scripts.
 
 ## Dependency flow
 
@@ -39,47 +39,43 @@ flowchart TB
   subgraph entry [Entry points]
     BAT[run_*.bat / VBS]
     CS[console_scripts]
-    SHIM[root shims]
   end
 
   subgraph wxlocal_pkg [wxlocal package]
     CFG[config]
+    CORE[core]
     PIP[pipelines]
+    OPS[ops]
     SHR[shared]
     WEB[web]
     EXP[export]
-  end
-
-  subgraph legacy_root [Repo root legacy]
-    WCDB[wcdb_bridge / scan_keys_v41]
-    EXPCT[export_contact]
+    CAP[mp_scroll.capture]
   end
 
   subgraph external [External]
-    MP[mp_capture]
     KB[(WECHAT_KB_ROOT)]
     WX[WeChat PC data]
   end
 
-  BAT --> SHIM
+  BAT --> OPS
+  BAT --> PIP
   CS --> PIP
-  SHIM --> PIP
+  CS --> WEB
+  CS --> EXP
+  OPS --> PIP
   PIP --> CFG
   PIP --> SHR
-  PIP --> EXPCT
-  PIP --> WCDB
-  PIP --> MP
-  MP --> SHR
-  MP --> CFG
-  WEB --> EXPCT
-  EXP --> WCDB
+  PIP --> CORE
+  PIP --> CAP
+  CAP --> SHR
+  CAP --> CFG
+  WEB --> CFG
+  EXP --> CORE
   PIP --> KB
-  WCDB --> WX
+  CORE --> WX
 ```
 
-**Import rule:** `mp_capture` and `wxlocal.*` must not import each other circularly. Shared logic lives in `wxlocal.shared`; `mp_capture` calls into it, not the reverse.
-
-## PID and logs (R5)
+## PID and logs
 
 | Pipeline | PID file (canonical) | Legacy PID | Repo log |
 |----------|----------------------|------------|----------|
@@ -92,10 +88,10 @@ flowchart TB
 
 ```
 WxLocalAutostart.vbs
-  → bootstrap_autostart.py (wait_for_paths, resolve pythonw)
-    → bootstrap_mp_scroll.py
-    → bootstrap_chat_watch.py
-      → launchers/win/run_daemon.vbs  (manual run_*.bat path)
+  → pythonw -m wxlocal.ops.bootstrap_autostart
+    → -m wxlocal.pipelines.mp_scroll.bootstrap
+    → -m wxlocal.pipelines.chat_watch.bootstrap
+Manual: run_*.bat → launchers/win/run_daemon.vbs -m …
 ```
 
 ## Deliberately out of scope

@@ -1,7 +1,7 @@
 """Smoke tests for config.find_user_db_storage."""
 from __future__ import annotations
 
-from config import find_user_db_storage
+from wxlocal.config.config import find_user_db_storage
 
 
 def test_find_user_db_storage_skips_system_dirs(tmp_path):

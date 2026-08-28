@@ -7,5 +7,9 @@ if %errorlevel% neq 0 (
 )
 
 cd /d "%~dp0"
-".venv\Scripts\python.exe" main.py %*
+if exist ".venv\Scripts\wxlocal-export.exe" (
+    ".venv\Scripts\wxlocal-export.exe" %*
+) else (
+    ".venv\Scripts\python.exe" -m wxlocal.export.cli %*
+)
 pause

@@ -5,8 +5,8 @@ import json
 from collections import Counter
 from datetime import datetime
 
-from mp_capture.idb_reader import article_key, scan_live, url_has_sn
-from mp_capture.idb_registry import load_registry
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import article_key, scan_live, url_has_sn
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import load_registry
 
 cards, blob = scan_live()
 reg = load_registry()

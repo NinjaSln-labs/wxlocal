@@ -4,9 +4,9 @@ from __future__ import annotations
 import json
 import sys
 
-from mp_capture.idb_blink import extract_triple_cards_from_storage
-from mp_capture.idb_leveldb import extract_triple_cards_from_leveldb_dirs
-from mp_capture.idb_reader import article_key, find_storage_dirs, triple_to_url, url_has_sn
+from wxlocal.pipelines.mp_scroll.capture.idb_blink import extract_triple_cards_from_storage
+from wxlocal.pipelines.mp_scroll.capture.idb_leveldb import extract_triple_cards_from_leveldb_dirs
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import article_key, find_storage_dirs, triple_to_url, url_has_sn
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")

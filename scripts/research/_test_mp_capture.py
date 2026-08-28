@@ -1,4 +1,4 @@
-from mp_capture.parsers import extract_from_body, extract_from_json
+from wxlocal.pipelines.mp_scroll.capture.parsers import extract_from_body, extract_from_json
 
 sample = {
     "comm_msg_list": [

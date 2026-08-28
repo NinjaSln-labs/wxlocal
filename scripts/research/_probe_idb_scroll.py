@@ -6,15 +6,15 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-from mp_capture.idb_reader import extract_titles, extract_urls, find_idb_dirs, read_idb_bytes
-from mp_capture.idb_registry import load_registry
-from mp_capture.parsers import normalize_article_url
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import extract_titles, extract_urls, find_idb_dirs, read_idb_bytes
+from wxlocal.pipelines.mp_scroll.capture.idb_registry import load_registry
+from wxlocal.pipelines.mp_scroll.capture.parsers import normalize_article_url
 
 ROOT = Path(__file__).resolve().parent
 
 
 def read_one_idb(idb_dir) -> bytes:
-    from mp_capture.idb_reader import read_idb_bytes
+    from wxlocal.pipelines.mp_scroll.capture.idb_reader import read_idb_bytes
 
     return read_idb_bytes([idb_dir])
 

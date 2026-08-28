@@ -1,4 +1,4 @@
-"""Core package import contracts (R7)."""
+"""Core package import contracts (R7+)."""
 from __future__ import annotations
 
 
@@ -12,23 +12,6 @@ def test_core_modules_importable():
     assert callable(key_parser.parse_key_input)
     assert callable(wcdb.run_extract)
     assert callable(subprocess_win.kill_processes_matching)
-
-
-def test_root_core_shims():
-    import decrypt_db
-    import key_parser
-    import read_messages
-    import scan_keys_v41
-    import subprocess_win
-    import wcdb_bridge
-
-    assert callable(decrypt_db.decrypt_with_fallback)
-    assert callable(decrypt_db.copy_and_decrypt)
-    assert callable(scan_keys_v41.find_weixin_pid)
-    assert callable(wcdb_bridge.run_decrypt)
-    assert callable(read_messages.read_sessions)
-    assert callable(key_parser.parse_key_input)
-    assert callable(subprocess_win.run_silent)
 
 
 def test_package_consumers_use_wxlocal_core():

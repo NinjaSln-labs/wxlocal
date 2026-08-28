@@ -93,7 +93,7 @@ T4 doc links OK
 
 ---
 
-## Phase R — 结构重构（R0–R9 ✅ · R10 待实施）
+## Phase R — 结构重构（R0–R10 ✅）
 
 详见 **[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md)** · 文件清单 **[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)**
 
@@ -110,7 +110,7 @@ T4 doc links OK
 
 ---
 
-## Phase R6–R10 — 根目录收口（R6–R9 ✅ · R10 待实施）
+## Phase R6–R10 — 根目录收口（R6–R10 ✅ · v0.2.0）
 
 > 完整计划：[docs/REFACTOR_PLAN.md](REFACTOR_PLAN.md) · 文件级清单：[docs/REFACTOR_INVENTORY.md](REFACTOR_INVENTORY.md)
 
@@ -120,7 +120,7 @@ T4 doc links OK
 | R7 | `wxlocal/core`（wcdb · decrypt · keys）· 去 `_legacy` | P0 | ✅ |
 | R8 | pipelines/export 迁包 · ops 脚本 → `scripts/ops/` | P1 | ✅ |
 | R9 | `mp_capture` → `wxlocal.pipelines.mp_scroll.capture` | P2 | ✅ |
-| R10 | 删根 shim · 根目录 0 `.py` · v0.2.0 | P1 | ⏳ |
+| R10 | 删根 shim · 根目录 0 `.py` · v0.2.0 | P1 | ✅ |
 
 **目标**：根目录只留 bat/vbs + 元数据；全部 Python 在 `wxlocal/` 内。
 

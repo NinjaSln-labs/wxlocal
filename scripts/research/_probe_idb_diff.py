@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 from export_mp_idb import IDB_DIRS, extract_urls, read_idb_bytes
-from mp_capture.parsers import normalize_article_url
+from wxlocal.pipelines.mp_scroll.capture.parsers import normalize_article_url
 
 
 def norm_set(urls: list[str]) -> set[str]:

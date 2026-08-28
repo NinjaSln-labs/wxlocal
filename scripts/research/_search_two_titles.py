@@ -84,7 +84,7 @@ def search_registry() -> None:
 
 def search_idb_blob() -> None:
     print("\n=== idb blob text ===")
-    from mp_capture.idb_reader import read_idb_bytes
+    from wxlocal.pipelines.mp_scroll.capture.idb_reader import read_idb_bytes
 
     blob = read_idb_bytes().decode("utf-8", errors="replace")
     for keys in QUERIES:

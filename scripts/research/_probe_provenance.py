@@ -8,7 +8,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
-from mp_capture.idb_reader import (
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import (
     TRIPLEKEY_RE,
     article_key,
     extract_cards,

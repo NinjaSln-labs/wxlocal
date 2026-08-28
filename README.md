@@ -42,9 +42,9 @@
 
 | 路径 | 内容 |
 |------|------|
-| `wxlocal/` | 可安装包：`config` · `pipelines` · `shared` · `web` · `export` |
-| `mp_capture/` | IndexedDB 解析 · 注册表 · 正文抓取 |
-| `launchers/win/` | 统一 VBS 启动器 |
+| `wxlocal/` | 可安装包：`config` · `core` · `pipelines` · `ops` · `shared` · `web` · `export` |
+| `scripts/` | verify · daemon_status · ops · research |
+| `launchers/win/` | 统一 VBS 启动器（`pythonw -m …`） |
 | `vendor/wcdb-key-tool-main/` | SQLCipher 解密（MIT） |
 | `docs/` | DISCLAIMER · 运维 · 架构 |
 | `output/` | 运行时（密钥缓存、日志、`decrypted/`，gitignore） |

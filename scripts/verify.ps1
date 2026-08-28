@@ -13,7 +13,7 @@ if (-not (Test-Path $python)) {
 }
 
 Write-Host "T1 compileall..."
-& $python -m compileall -q wxlocal mp_capture env_loader.py paths.py config.py watchdog.py watch_mp_idb.py app.py main.py service.py
+& $python -m compileall -q wxlocal
 if ($LASTEXITCODE -ne 0) { throw "T1 compileall failed ($LASTEXITCODE)" }
 Write-Host "  OK"
 
@@ -33,7 +33,7 @@ if (-not $SkipIntegration) {
     if (Test-Path $watch) {
         & $watch --once
     } else {
-        & $python watchdog.py --once
+        & $python -m wxlocal.pipelines.chat_watch.daemon --once
     }
     if ($LASTEXITCODE -ne 0) { throw "T2 watch failed ($LASTEXITCODE)" }
     Write-Host "  OK"
@@ -43,7 +43,7 @@ if (-not $SkipIntegration) {
     if (Test-Path $scroll) {
         & $scroll --once
     } else {
-        & $python watch_mp_idb.py --once
+        & $python -m wxlocal.pipelines.mp_scroll.daemon --once
     }
     if ($LASTEXITCODE -ne 0) { throw "T3 mp-scroll failed ($LASTEXITCODE)" }
     Write-Host "  OK"
@@ -59,7 +59,8 @@ $docs = @(
     "docs/WECHAT_4.1.13_RESEARCH.md",
     "docs/LOCAL_SETUP.example.md",
     "docs/ARCHITECTURE.md",
-    "docs/DEV_PLAN.md"
+    "docs/DEV_PLAN.md",
+    "CHANGELOG.md"
 )
 foreach ($rel in $docs) {
     if (-not (Test-Path (Join-Path $Root $rel))) {
@@ -67,6 +68,13 @@ foreach ($rel in $docs) {
     }
 }
 Write-Host "  OK"
+
+Write-Host "T6 root .py count..."
+$rootPy = @(Get-ChildItem -Path $Root -File -Filter "*.py" -ErrorAction SilentlyContinue)
+if ($rootPy.Count -ne 0) {
+    throw ("T6 root still has .py: " + (($rootPy | ForEach-Object Name) -join ", "))
+}
+Write-Host "  OK (0)"
 
 Write-Host ""
 Write-Host "All checks passed."

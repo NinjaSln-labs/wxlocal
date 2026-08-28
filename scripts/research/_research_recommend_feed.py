@@ -10,7 +10,7 @@ from pathlib import Path
 
 from collections import Counter
 
-from mp_capture.idb_reader import read_storage_bytes, triple_to_url, url_has_sn
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import read_storage_bytes, triple_to_url, url_has_sn
 
 BACKUP = Path(os.environ.get("WECHAT_IDB_BACKUP", "")).expanduser()
 PROXY = "http://127.0.0.1:6696"

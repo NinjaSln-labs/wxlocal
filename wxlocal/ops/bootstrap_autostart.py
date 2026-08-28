@@ -7,35 +7,32 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from autostart_util import append_autostart_log, resolve_pythonw, wait_for_paths
+from wxlocal.config._root import PROJECT_ROOT
 from wxlocal.core.subprocess_win import CREATE_NO_WINDOW
+from wxlocal.ops.autostart import append_autostart_log, resolve_pythonw, wait_for_paths
 
-_BOOTSTRAPS = ("bootstrap_mp_scroll.py", "bootstrap_chat_watch.py")
+ROOT = PROJECT_ROOT
+_BOOTSTRAP_MODULES = (
+    "wxlocal.pipelines.mp_scroll.bootstrap",
+    "wxlocal.pipelines.chat_watch.bootstrap",
+)
 
 
-def _spawn_bootstrap(pyw: Path, script: str) -> int | None:
-    target = ROOT / script
-    if not target.is_file():
-        append_autostart_log(f"ERROR missing {target}")
-        return None
-    err_log = ROOT / "output" / f"autostart_{script.replace('.py', '')}.log"
+def _spawn_bootstrap(pyw: Path, module: str) -> int | None:
+    err_log = ROOT / "output" / f"autostart_{module.rsplit('.', 1)[-1]}.log"
     err_log.parent.mkdir(parents=True, exist_ok=True)
     log_fh = err_log.open("a", encoding="utf-8")
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     proc = subprocess.Popen(
-        [str(pyw), str(target)],
+        [str(pyw), "-m", module],
         cwd=str(ROOT),
         stdout=log_fh,
         stderr=subprocess.STDOUT,
         creationflags=CREATE_NO_WINDOW,
         env=env,
     )
-    append_autostart_log(f"spawned {script} pid={proc.pid} log={err_log.name}")
+    append_autostart_log(f"spawned -m {module} pid={proc.pid} log={err_log.name}")
     return proc.pid
 
 
@@ -49,8 +46,8 @@ def main() -> int:
         return 1
     append_autostart_log(f"using pythonw={pyw}")
     pids = []
-    for script in _BOOTSTRAPS:
-        pid = _spawn_bootstrap(pyw, script)
+    for module in _BOOTSTRAP_MODULES:
+        pid = _spawn_bootstrap(pyw, module)
         if pid:
             pids.append(pid)
         time.sleep(1)

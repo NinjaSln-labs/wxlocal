@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-from config import DATA_ROOT
+from wxlocal.config.config import DATA_ROOT
 
 RAW_KVDB = Path(DATA_ROOT) / "<account>" / "db_storage" / "message" / "biz_message_0.kvdb" if DATA_ROOT else Path("biz_message_0.kvdb")
 KEYWORDS = ["大叔笔记", "大叔", "dashu", "笔记"]

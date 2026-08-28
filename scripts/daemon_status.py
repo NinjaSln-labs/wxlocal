@@ -21,6 +21,7 @@ _PIPELINES = {
     "mp-scroll": {
         "label": "mp-scroll (IndexedDB watch)",
         "patterns": (
+            "mp_scroll.bootstrap",
             "bootstrap_mp_scroll",
             "bootstrap_mp_watch",
             "watch_mp_idb.py",
@@ -34,6 +35,7 @@ _PIPELINES = {
     "chat-watch": {
         "label": "chat-watch (contact export)",
         "patterns": (
+            "chat_watch.bootstrap",
             "bootstrap_chat_watch",
             "bootstrap_ninjasin_watch",
             "watchdog.py",

@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from config import DATA_ROOT, find_user_db_storage
+from wxlocal.config.config import DATA_ROOT, find_user_db_storage
 
 db_storage = find_user_db_storage(DATA_ROOT)
 if not db_storage:

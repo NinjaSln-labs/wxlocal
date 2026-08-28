@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-from mp_capture.idb_reader import extract_urls, read_storage_bytes
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import extract_urls, read_storage_bytes
 
 TRIPLE_RE = re.compile(r'triplekey"\s*([\w=+-]+-\d{8,13}-\d+)"')
 URL_RE = re.compile(r"https?://mp\.weixin\.qq\.com/s[^\s\"'\\<>]{10,400}")

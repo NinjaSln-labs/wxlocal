@@ -66,5 +66,5 @@ End If
 
 sh.CurrentDirectory = root
 sh.Environment("Process")("PYTHONIOENCODING") = "utf-8"
-AppendLaunchLog "starting bootstrap_autostart via " & pyw & " root=" & root
-sh.Run """" & pyw & """ """ & root & "\bootstrap_autostart.py""", 0, False
+AppendLaunchLog "starting -m wxlocal.ops.bootstrap_autostart via " & pyw & " root=" & root
+sh.Run """" & pyw & """ -m wxlocal.ops.bootstrap_autostart", 0, False

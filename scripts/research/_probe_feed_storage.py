@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from mp_capture.idb_reader import DEFAULT_PROFILES, read_storage_bytes, find_storage_dirs
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import DEFAULT_PROFILES, read_storage_bytes, find_storage_dirs
 
 SHORT_RE = re.compile(r"https?://mp\.weixin\.qq\.com/s/[A-Za-z0-9_\-]{8,40}")
 TITLE_UTF16_HINTS = ("codebase-memory", "LoongSuite", "CyberGym", "Claude Science", "自主渗透")

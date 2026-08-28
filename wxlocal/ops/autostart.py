@@ -6,7 +6,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+from wxlocal.config._root import PROJECT_ROOT
+
+ROOT = PROJECT_ROOT
 AUTOSTART_LOG = ROOT / "output" / "autostart_launch.log"
 
 
@@ -30,7 +32,7 @@ def _drive_ready(path: Path) -> bool:
 
 def wait_for_paths(*, max_wait: int = 120, poll: float = 2.0) -> bool:
     """Wait until WECHAT_KB_ROOT / WECHAT_DATA_ROOT drives and dirs are usable."""
-    from env_loader import load_env
+    from wxlocal.config.env_loader import load_env
 
     load_env()
 
@@ -75,7 +77,7 @@ def wait_for_paths(*, max_wait: int = 120, poll: float = 2.0) -> bool:
 
 def resolve_pythonw(project_root: Path | None = None) -> Path:
     """Prefer WXLOCAL_PYTHON from .env, then venv pythonw."""
-    from env_loader import load_env
+    from wxlocal.config.env_loader import load_env
 
     load_env()
     root = project_root or ROOT

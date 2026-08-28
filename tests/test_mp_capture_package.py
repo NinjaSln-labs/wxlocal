@@ -1,4 +1,4 @@
-"""R9: mp_capture lives under wxlocal.pipelines.mp_scroll.capture."""
+"""R9/R10: capture package under wxlocal.pipelines.mp_scroll.capture."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -20,7 +20,5 @@ def test_mp_scroll_daemon_uses_package_capture():
     assert "wxlocal.pipelines.mp_scroll.capture.idb_registry" in text
 
 
-def test_root_mp_capture_is_shim():
-    text = (ROOT / "mp_capture" / "idb_registry.py").read_text(encoding="utf-8")
-    assert "wxlocal.pipelines.mp_scroll.capture.idb_registry" in text
-    assert "def run_pipeline" not in text
+def test_root_mp_capture_package_removed():
+    assert not (ROOT / "mp_capture" / "idb_registry.py").is_file()

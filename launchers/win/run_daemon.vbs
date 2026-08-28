@@ -1,17 +1,17 @@
-' Silent launcher for a wxlocal bootstrap script.
-' Usage: wscript //nologo run_daemon.vbs <bootstrap.py> [log-tag]
+' Silent launcher for a wxlocal bootstrap module.
+' Usage: wscript //nologo run_daemon.vbs <module.name> [log-tag]
 Option Explicit
 
-Dim fso, root, pyw, sh, launchLog, ts, bootstrapScript, logTag
+Dim fso, root, pyw, sh, launchLog, ts, moduleName, logTag, modulePath
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set sh = CreateObject("WScript.Shell")
 
 If WScript.Arguments.Count < 1 Then
-    WScript.Echo "usage: run_daemon.vbs bootstrap_script.py [log-tag]"
+    WScript.Echo "usage: run_daemon.vbs module.name [log-tag]"
     WScript.Quit 1
 End If
 
-bootstrapScript = WScript.Arguments(0)
+moduleName = WScript.Arguments(0)
 If WScript.Arguments.Count >= 2 Then
     logTag = WScript.Arguments(1)
 Else
@@ -21,6 +21,7 @@ End If
 root = ResolveProjectRoot(fso)
 pyw = ResolvePythonw(fso, root, sh)
 launchLog = root & "\output\autostart_launch.log"
+modulePath = root & "\" & Replace(moduleName, ".", "\") & ".py"
 
 Function ResolveProjectRoot(fso)
     Dim scriptDir, repoRoot, rootFile, legacyFile, startupRootFile
@@ -87,12 +88,12 @@ If Not fso.FileExists(pyw) And pyw <> "pythonw.exe" Then
     WScript.Quit 1
 End If
 
-If Not fso.FileExists(root & "\" & bootstrapScript) Then
-    AppendLaunchLog "ERROR bootstrap missing: " & root & "\" & bootstrapScript
+If Not fso.FileExists(modulePath) Then
+    AppendLaunchLog "ERROR bootstrap module missing: " & modulePath
     WScript.Quit 1
 End If
 
 sh.CurrentDirectory = root
 sh.Environment("Process")("PYTHONIOENCODING") = "utf-8"
-AppendLaunchLog "starting " & bootstrapScript & " via " & pyw & " root=" & root
-sh.Run """" & pyw & """ """ & root & "\" & bootstrapScript & """", 0, False
+AppendLaunchLog "starting -m " & moduleName & " via " & pyw & " root=" & root
+sh.Run """" & pyw & """ -m " & moduleName, 0, False

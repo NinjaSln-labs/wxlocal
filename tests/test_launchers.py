@@ -13,9 +13,9 @@ CANONICAL = [
     "status_wxlocal.bat",
     "setup_wxlocal_autostart.bat",
     "WxLocalAutostart.vbs",
-    "bootstrap_autostart.py",
-    "bootstrap_chat_watch.py",
-    "bootstrap_mp_scroll.py",
+    "wxlocal/ops/bootstrap_autostart.py",
+    "wxlocal/pipelines/chat_watch/bootstrap.py",
+    "wxlocal/pipelines/mp_scroll/bootstrap.py",
     "launchers/win/run_daemon.vbs",
 ]
 
@@ -33,6 +33,13 @@ REMOVED_LEGACY = [
     "stop_ninjasin_watchdog.bat",
     "stop_mp_idb_watch.bat",
     "status_mp_idb_watch.bat",
+    "WeChatReaderAutostart.vbs",
+    "setup_autostart.ps1",
+    "bootstrap_chat_watch.py",
+    "bootstrap_mp_scroll.py",
+    "watchdog.py",
+    "watch_mp_idb.py",
+    "reset_mp_scroll.bat",
 ]
 
 
@@ -46,23 +53,32 @@ def test_removed_legacy_launchers_gone():
     assert not still_present, f"legacy launchers should be removed: {still_present}"
 
 
+def test_root_has_no_python_files():
+    root_py = sorted(p.name for p in ROOT.glob("*.py"))
+    assert root_py == [], f"root .py should be empty, found: {root_py}"
+
+
 def test_stop_wxlocal_uses_daemon_status():
     text = (ROOT / "stop_wxlocal.bat").read_text(encoding="utf-8")
     assert "daemon_status.py stop" in text
     assert "F:\\" not in text
 
 
-def test_run_bats_use_canonical_bootstraps():
+def test_run_bats_use_package_modules():
     chat = (ROOT / "run_chat_watch.bat").read_text(encoding="utf-8")
     scroll = (ROOT / "run_mp_scroll.bat").read_text(encoding="utf-8")
-    assert "bootstrap_chat_watch.py" in chat
-    assert "bootstrap_mp_scroll.py" in scroll
+    assert "wxlocal.pipelines.chat_watch.bootstrap" in chat
+    assert "wxlocal.pipelines.mp_scroll.bootstrap" in scroll
     assert "ninjasin" not in chat.lower()
     assert "mp_idb" not in scroll.lower()
 
 
-def test_autostart_spawns_canonical_bootstraps():
-    text = (ROOT / "bootstrap_autostart.py").read_text(encoding="utf-8")
-    assert "bootstrap_chat_watch.py" in text
-    assert "bootstrap_mp_scroll.py" in text
+def test_autostart_spawns_package_bootstraps():
+    text = (ROOT / "wxlocal" / "ops" / "bootstrap_autostart.py").read_text(encoding="utf-8")
+    assert "wxlocal.pipelines.chat_watch.bootstrap" in text
+    assert "wxlocal.pipelines.mp_scroll.bootstrap" in text
     assert "bootstrap_ninjasin_watch.py" not in text
+
+
+def test_no_legacy_bootstrap_helper():
+    assert not (ROOT / "wxlocal" / "_legacy.py").is_file()

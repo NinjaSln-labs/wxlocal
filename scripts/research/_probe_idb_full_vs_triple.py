@@ -5,7 +5,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from mp_capture.idb_reader import TRIPLEKEY_RE, read_storage_bytes, url_has_sn
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import TRIPLEKEY_RE, read_storage_bytes, url_has_sn
 
 BACKUP = Path(
     r"F:\ext\knowledge-base\wechat\mp-scroll\reset-backup\20260827-151408\wechat-idb"

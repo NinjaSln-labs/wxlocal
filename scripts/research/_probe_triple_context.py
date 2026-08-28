@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-from mp_capture.idb_reader import read_storage_bytes
+from wxlocal.pipelines.mp_scroll.capture.idb_reader import read_storage_bytes
 
 text = read_storage_bytes().decode("utf-8", errors="replace")
 
