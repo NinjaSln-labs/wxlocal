@@ -47,3 +47,7 @@ _print_*.py
 _sample_*.py
 scan_keys.py
 
+# Local / private handoff (not for remote)
+HANDOFF.md
+HANDOFF-ARCHIVE/
+
