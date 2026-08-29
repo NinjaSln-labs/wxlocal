@@ -1,30 +1,51 @@
 ' Login autostart — mp-scroll + chat-watch (wxlocal)
+' Startup folder must only contain this .vbs (never a .path sidecar — Windows tries to open it).
 Option Explicit
 
 Dim fso, root, pyw, sh, launchLog, ts
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set sh = CreateObject("WScript.Shell")
-root = ResolveProjectRoot(fso)
+root = ResolveProjectRoot(fso, sh)
 pyw = ResolvePythonw(fso, root, sh)
 launchLog = root & "\output\autostart_launch.log"
 
-Function ResolveProjectRoot(fso)
-    Dim rootFile, scriptDir, legacyFile
-    scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
-    rootFile = fso.BuildPath(scriptDir, "wxlocal.path")
-    legacyFile = fso.BuildPath(scriptDir, "wechat-reader.path")
-    If fso.FileExists(rootFile) Then
-        Dim tsRoot
-        Set tsRoot = fso.OpenTextFile(rootFile, 1)
-        ResolveProjectRoot = Trim(tsRoot.ReadAll())
-        tsRoot.Close
-    ElseIf fso.FileExists(legacyFile) Then
-        Set tsRoot = fso.OpenTextFile(legacyFile, 1)
-        ResolveProjectRoot = Trim(tsRoot.ReadAll())
-        tsRoot.Close
-    Else
-        ResolveProjectRoot = scriptDir
+Function ResolveProjectRoot(fso, sh)
+    Dim rootFile, legacyFile, localRoot, startupLegacy
+    ' Preferred: %LOCALAPPDATA%\wxlocal\install_root.txt (not in Startup)
+    localRoot = sh.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\wxlocal\install_root.txt"
+    If fso.FileExists(localRoot) Then
+        ResolveProjectRoot = Trim(ReadAllText(fso, localRoot))
+        Exit Function
     End If
+    ' Repo-local pointer (optional)
+    rootFile = fso.BuildPath(fso.GetParentFolderName(WScript.ScriptFullName), "wxlocal.path")
+    ' When VBS lives in Startup, parent is Startup — skip non-vbs there; try known default
+    If Right(LCase(rootFile), 15) = "\wxlocal.path" And InStr(1, LCase(rootFile), "\startup\", vbTextCompare) > 0 Then
+        rootFile = ""
+    End If
+    If rootFile <> "" And fso.FileExists(rootFile) Then
+        ResolveProjectRoot = Trim(ReadAllText(fso, rootFile))
+        Exit Function
+    End If
+    ' Migrate: old Startup\wxlocal.path still readable once, then prefer AppData next install
+    startupLegacy = sh.SpecialFolders("Startup") & "\wxlocal.path"
+    If fso.FileExists(startupLegacy) Then
+        ResolveProjectRoot = Trim(ReadAllText(fso, startupLegacy))
+        Exit Function
+    End If
+    legacyFile = sh.SpecialFolders("Startup") & "\wechat-reader.path"
+    If fso.FileExists(legacyFile) Then
+        ResolveProjectRoot = Trim(ReadAllText(fso, legacyFile))
+        Exit Function
+    End If
+    ResolveProjectRoot = fso.GetParentFolderName(WScript.ScriptFullName)
+End Function
+
+Function ReadAllText(fso, path)
+    Dim ts
+    Set ts = fso.OpenTextFile(path, 1)
+    ReadAllText = ts.ReadAll()
+    ts.Close
 End Function
 
 Function ResolvePythonw(fso, root, sh)

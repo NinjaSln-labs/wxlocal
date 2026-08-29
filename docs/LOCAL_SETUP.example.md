@@ -9,4 +9,5 @@ WXLOCAL_PYTHON=E:\Python312\pythonw.exe
 
 Repo path: `E:\workspace\wxlocal\` · Upstream: https://github.com/NinjaSln-labs/wxlocal
 
-Autostart: `.\setup_wxlocal_autostart.bat` → Startup `WxLocalAutostart.vbs` + `wxlocal.path`
+Autostart: `.\setup_wxlocal_autostart.bat` → Startup `WxLocalAutostart.vbs` + `%LOCALAPPDATA%\wxlocal\install_root.txt`
+

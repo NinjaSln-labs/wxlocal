@@ -36,3 +36,8 @@ Breaking cleanup of the repo root: all Python lives under `wxlocal/` (and `scrip
 
 - Removed redundant `run.bat` / `run-elevated.bat` / `Run-AsAdmin.ps1` (use `run_extract.bat`)
 - Moved `Read-WeChatChats.ps1` → `scripts/legacy/`
+
+### Autostart path file
+
+- Stop writing `Startup\wxlocal.path` (Windows login tried to open it → “choose app” dialogs)
+- Install root now: `%LOCALAPPDATA%\wxlocal\install_root.txt`

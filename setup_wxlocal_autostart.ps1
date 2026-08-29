@@ -2,6 +2,9 @@
 #
 #   .\setup_wxlocal_autostart.bat          ← 推荐（绕过 ExecutionPolicy）
 #   .\setup_wxlocal_autostart.ps1 -Uninstall
+#
+# 仓库路径写在 %LOCALAPPDATA%\wxlocal\install_root.txt
+# （不要放 Startup\*.path —— Windows 登录会弹“选择打开方式”）
 
 param(
     [ValidateSet("Startup", "Task")]
@@ -21,15 +24,23 @@ $ProjectRoot = (Resolve-Path $ProjectRoot).Path
 $AutostartVbs = Join-Path $ProjectRoot "WxLocalAutostart.vbs"
 $StartupFolder = [Environment]::GetFolderPath("Startup")
 $StartupLink = Join-Path $StartupFolder "WxLocalAutostart.vbs"
-$StartupRootFile = Join-Path $StartupFolder "wxlocal.path"
+$LegacyStartupRootFile = Join-Path $StartupFolder "wxlocal.path"
 $LegacyVbs = Join-Path $StartupFolder "WeChatReaderAutostart.vbs"
 $LegacyRootFile = Join-Path $StartupFolder "wechat-reader.path"
 $LegacyStartupBat = Join-Path $StartupFolder "WeChatReaderAutostart.bat"
 $LegacyStartupOld = Join-Path $StartupFolder "WeChatMpIdbWatch.bat"
 
+$StateDir = Join-Path $env:LOCALAPPDATA "wxlocal"
+$InstallRootFile = Join-Path $StateDir "install_root.txt"
+
 function Write-Info($msg) { Write-Host "[*] $msg" }
 function Write-Ok($msg) { Write-Host "[+] $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "[!] $msg" -ForegroundColor Yellow }
+
+function Write-InstallRoot([string]$root) {
+    New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
+    Set-Content -Path $InstallRootFile -Value $root -Encoding ASCII -NoNewline
+}
 
 if (-not (Test-Path $AutostartVbs)) {
     Write-Warn "未找到 WxLocalAutostart.vbs: $AutostartVbs"
@@ -37,7 +48,15 @@ if (-not (Test-Path $AutostartVbs)) {
 }
 
 if ($Uninstall) {
-    foreach ($p in @($StartupLink, $StartupRootFile, $LegacyVbs, $LegacyRootFile, $LegacyStartupBat, $LegacyStartupOld)) {
+    foreach ($p in @(
+            $StartupLink,
+            $LegacyStartupRootFile,
+            $LegacyVbs,
+            $LegacyRootFile,
+            $LegacyStartupBat,
+            $LegacyStartupOld,
+            $InstallRootFile
+        )) {
         if (Test-Path $p) {
             Remove-Item $p -Force
             Write-Ok "已删除: $p"
@@ -62,14 +81,18 @@ Write-Info "wxlocal 目录: $ProjectRoot"
 
 if ($Mode -eq "Startup") {
     Copy-Item -Path $AutostartVbs -Destination $StartupLink -Force
-    Set-Content -Path $StartupRootFile -Value $ProjectRoot -Encoding ASCII -NoNewline
-    foreach ($p in @($LegacyVbs, $LegacyRootFile, $LegacyStartupBat, $LegacyStartupOld)) {
-        if (Test-Path $p) { Remove-Item $p -Force }
+    Write-InstallRoot $ProjectRoot
+    # Remove legacy Startup\*.path — they cause "Open with" dialogs at login
+    foreach ($p in @($LegacyStartupRootFile, $LegacyVbs, $LegacyRootFile, $LegacyStartupBat, $LegacyStartupOld)) {
+        if (Test-Path $p) {
+            Remove-Item $p -Force
+            Write-Ok "已移除会弹窗的启动项: $p"
+        }
     }
     Write-Ok "已写入登录启动项 WxLocalAutostart.vbs"
     Write-Host ""
     Write-Host "  启动项:   $StartupLink"
-    Write-Host "  路径文件: $StartupRootFile"
+    Write-Host "  路径文件: $InstallRootFile"
     Write-Host "  卸载:     .\setup_wxlocal_autostart.ps1 -Uninstall"
     Write-Host "  状态:     .\status_wxlocal.bat"
     exit 0
@@ -86,7 +109,12 @@ if (-not $isAdmin) {
 $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 if ($existing) { Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false }
 
-Set-Content -Path $StartupRootFile -Value $ProjectRoot -Encoding ASCII -NoNewline
+Write-InstallRoot $ProjectRoot
+# Also strip any leftover Startup path files in Task mode
+foreach ($p in @($LegacyStartupRootFile, $LegacyRootFile)) {
+    if (Test-Path $p) { Remove-Item $p -Force }
+}
+
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "//nologo `"$AutostartVbs`"" -WorkingDirectory $ProjectRoot
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 0)

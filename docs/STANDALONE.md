@@ -47,7 +47,8 @@ Root directory has **0** `.py` files (v0.2.0). See [ARCHITECTURE.md](ARCHITECTUR
 
 Login flow: `WxLocalAutostart.vbs` → `pythonw -m wxlocal.ops.bootstrap_autostart` (waits for `WECHAT_KB_ROOT` / `WECHAT_DATA_ROOT` drives) → spawns `-m wxlocal.pipelines.mp_scroll.bootstrap` + `-m wxlocal.pipelines.chat_watch.bootstrap`.
 
-- Startup folder: `WxLocalAutostart.vbs` + `wxlocal.path`
+- Startup folder: **only** `WxLocalAutostart.vbs`（仓库路径在 `%LOCALAPPDATA%\wxlocal\install_root.txt`，勿再放 `*.path` 到 Startup，否则会弹“选择打开方式”）
+
 - Install: `setup_wxlocal_autostart.bat`
 - Logs: `output/autostart_launch.log`, `output/autostart_bootstrap_*.log`
 - `WXLOCAL_PYTHON` in `.env` is used (VBS alone cannot read `.env`)

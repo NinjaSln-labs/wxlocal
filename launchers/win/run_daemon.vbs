@@ -24,19 +24,22 @@ launchLog = root & "\output\autostart_launch.log"
 modulePath = root & "\" & Replace(moduleName, ".", "\") & ".py"
 
 Function ResolveProjectRoot(fso)
-    Dim scriptDir, repoRoot, rootFile, legacyFile, startupRootFile
+    Dim scriptDir, repoRoot, rootFile, legacyFile, localRoot, shLocal, startupLegacy
+    Set shLocal = CreateObject("WScript.Shell")
     scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
     repoRoot = fso.GetParentFolderName(fso.GetParentFolderName(scriptDir))
-    rootFile = fso.BuildPath(repoRoot, "wxlocal.path")
-    legacyFile = fso.BuildPath(repoRoot, "wechat-reader.path")
-    startupRootFile = fso.BuildPath(WScript.CreateObject("WScript.Shell").SpecialFolders("Startup"), "wxlocal.path")
-    If fso.FileExists(startupRootFile) Then
-        Dim tsStartup
-        Set tsStartup = fso.OpenTextFile(startupRootFile, 1)
-        ResolveProjectRoot = Trim(tsStartup.ReadAll())
-        tsStartup.Close
+    ' Preferred: %LOCALAPPDATA%\wxlocal\install_root.txt (never put this in Startup)
+    localRoot = shLocal.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\wxlocal\install_root.txt"
+    If fso.FileExists(localRoot) Then
+        Dim tsLocal
+        Set tsLocal = fso.OpenTextFile(localRoot, 1)
+        ResolveProjectRoot = Trim(tsLocal.ReadAll())
+        tsLocal.Close
         Exit Function
     End If
+    rootFile = fso.BuildPath(repoRoot, "wxlocal.path")
+    legacyFile = fso.BuildPath(repoRoot, "wechat-reader.path")
+    startupLegacy = shLocal.SpecialFolders("Startup") & "\wxlocal.path"
     If fso.FileExists(rootFile) Then
         Dim tsRoot
         Set tsRoot = fso.OpenTextFile(rootFile, 1)
@@ -46,6 +49,11 @@ Function ResolveProjectRoot(fso)
         Set tsRoot = fso.OpenTextFile(legacyFile, 1)
         ResolveProjectRoot = Trim(tsRoot.ReadAll())
         tsRoot.Close
+    ElseIf fso.FileExists(startupLegacy) Then
+        Dim tsStartup
+        Set tsStartup = fso.OpenTextFile(startupLegacy, 1)
+        ResolveProjectRoot = Trim(tsStartup.ReadAll())
+        tsStartup.Close
     Else
         ResolveProjectRoot = repoRoot
     End If
