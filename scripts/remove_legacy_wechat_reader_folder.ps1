@@ -1,9 +1,9 @@
-# Run once after closing Cursor/terminals using the old path.
-# Removes E:\workspace\wechat-reader if E:\workspace\wxlocal is the active clone.
+﻿# Run once after closing Cursor/terminals using the old path.
+# Removes E:\workspace\wechat-reader if E:\ninjasin-labs\wxlocal is the active clone.
 
 $ErrorActionPreference = "Stop"
 $legacy = "E:\workspace\wechat-reader"
-$current = "E:\workspace\wxlocal"
+$current = "E:\ninjasin-labs\wxlocal"
 
 if (-not (Test-Path $current)) {
     Write-Error "Expected active repo at $current"
