@@ -51,3 +51,6 @@ scan_keys.py
 HANDOFF.md
 HANDOFF-ARCHIVE/
 
+
+# Local-only git hooks (not for remote)
+.githooks/
