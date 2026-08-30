@@ -42,10 +42,14 @@ Function ResolveProjectRoot(fso, sh)
 End Function
 
 Function ReadAllText(fso, path)
-    Dim ts
+    Dim ts, s
     Set ts = fso.OpenTextFile(path, 1)
-    ReadAllText = ts.ReadAll()
+    s = ts.ReadAll()
     ts.Close
+    ' VBScript Trim() strips spaces only; a trailing CR/LF here poisons
+    ' sh.CurrentDirectory with 8007007B (filename/directory syntax incorrect).
+    s = Replace(Replace(Trim(s), vbCr, ""), vbLf, "")
+    ReadAllText = Trim(s)
 End Function
 
 Function ResolvePythonw(fso, root, sh)
@@ -82,6 +86,11 @@ End Sub
 
 If Not fso.FileExists(pyw) And pyw <> "pythonw.exe" Then
     AppendLaunchLog "ERROR pythonw missing: " & pyw
+    WScript.Quit 1
+End If
+
+If Not fso.FolderExists(root) Then
+    AppendLaunchLog "ERROR project root missing: " & root
     WScript.Quit 1
 End If
 
