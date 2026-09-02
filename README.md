@@ -95,7 +95,7 @@ copy .env.example .env
 | `WECHAT_KB_ROOT` | 语料导出根（默认 `./data/knowledge-base`） |
 | `WECHAT_WATCH_CONTACT` | chat-watch 联系人昵称（默认 `FileTransfer`） |
 | `WXLOCAL_PYTHON` | 自启用 `pythonw` 路径 |
-| `WECHAT_FETCH_PROXY` | 正文抓取 HTTP 代理（可选） |
+| `WECHAT_FETCH_PROXY` | 标题抓取 HTTP 代理（正文抓取**当前降级**，详见 §边界） |
 
 分类 / 过滤规则可放在消费者 KB 的 `config/*.json`，见 [docs/STANDALONE.md](docs/STANDALONE.md)。
 
@@ -110,10 +110,13 @@ copy .env.example .env
 | [WECHAT_4.1.13_RESEARCH](docs/WECHAT_4.1.13_RESEARCH.md) | 4.x 解密调研笔记 |
 | [LOCAL_SETUP.example](docs/LOCAL_SETUP.example.md) | 维护者本地配置模板 |
 
-## 边界（刻意不做）
+## 边界（刻意不做 / 当前受限）
 
-不做：云端同步、多账号 SaaS、绕过微信 ToS 的「破解」宣传、保证正文 100% 抓取。  
-只做：读本机已落盘数据 + 可选代理补正文 + 可配置外置语料目录。
+不做：云端同步、多账号 SaaS、绕过微信 ToS 的「破解」宣传。
+
+**受限（08-28 起，待方案验证）**：文章**正文**获取受微信改版影响——微信 PC 客户端正文走 **mmsocket 加密直连**（绕过 HTTP 代理），HTTP GET 文章 URL 返回 **TCaptcha 验证码**挑战页，常规抓取路径全灭。当前仅能获取**标题 + 短摘要**（卡片 des，平均 111 字）；两条线（mp-scroll 注册表 URL + chat-watch 会话卡片）拿文章全文都依赖 HTTP，HTTP 堵死则正文拿不到。F2 正文恢复方案（验证码 API 破解等）见 [docs/ROADMAP.md](docs/ROADMAP.md) §F2，待验证后再开工。
+
+只做：读本机已落盘数据 + 可选代理补正文（**当前降级**）+ 可配置外置语料目录。
 
 ## Git
 
