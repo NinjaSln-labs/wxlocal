@@ -323,6 +323,57 @@ def _in_backoff_window(row: dict[str, Any], attempts: int, backoff_hours: int, n
     return elapsed_hours < attempts * backoff_hours
 
 
+def backfill_body(
+    registry: dict[str, Any],
+    *,
+    url: str | None = None,
+    ak: str | None = None,
+    body: str,
+    source: str = "mitm抓包",
+) -> bool:
+    """将抓包获取的正文写入注册表（F2 路线 A 写回入口）。
+
+    匹配：优先 article_key（ak），其次归一化 URL / article_key 兜底。
+    命中后写 body、重置 body_attempts=0、清 body_giveup、status=body_fetched。
+    返回 True 表示写入成功。
+    """
+    if not body or len(body.strip()) < 80:
+        return False
+    items = registry.get("items", {})
+    target_row: dict[str, Any] | None = None
+    # 策略 1：article_key 直接命中
+    if ak:
+        _, target_row = _find_item_by_key(items, ak)
+    # 策略 2：归一化 URL 或兜底 article_key
+    if target_row is None and url:
+        norm = normalize_capture_url(url)
+        for u, row in items.items():
+            if row.get("url") == norm:
+                target_row = row
+                break
+            if (row.get("article_key") or article_key(u)) == article_key(norm):
+                target_row = row
+                break
+    if target_row is None:
+        return False
+    target_row["body"] = body
+    target_row["body_source"] = source
+    target_row["status"] = "body_fetched"
+    target_row["body_attempts"] = 0
+    target_row.pop("body_giveup", None)
+    target_row["fetched_at"] = _now()
+    return True
+
+
+def normalize_capture_url(url: str) -> str:
+    """轻量 URL 归一化（避免 import parsers 循环）。"""
+    if not url or "mp.weixin.qq.com" not in url:
+        return url
+    if url.startswith("//"):
+        return "https:" + url
+    return url.split("#", 1)[0]
+
+
 def enrich_pending(registry: dict[str, Any], *, limit: int | None = None, now: datetime | None = None) -> dict[str, int]:
     """给无标题条目抓标题，并打上 dev_related 标记。
 

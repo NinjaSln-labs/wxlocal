@@ -237,3 +237,75 @@ def test_title_enrich_no_title_no_body_fetch_does_not_break(monkeypatch):
     assert stats["failed"] == 1
     assert reg["items"]["u1"]["status"] == "title_failed"
     assert reg["items"]["u1"].get("body", "") == ""
+
+
+# --- backfill_body (F2 写回) ---
+
+
+def _backfill_body_row(**kw) -> dict:
+    defaults = _row(status="title_fetched", body_attempts=3, body_giveup=True)
+    defaults.update(kw)
+    return defaults
+
+
+def test_backfill_body_writes_body_and_resets_state():
+    body = "x" * 200
+    row = _backfill_body_row(url=SN_URL, article_key="k1")
+    reg = _reg({"u1": row})
+    ok = ir.backfill_body(reg, url=SN_URL, ak="k1", body=body, source="mitm")
+    assert ok is True
+    assert reg["items"]["u1"]["body"] == body
+    assert reg["items"]["u1"]["body_source"] == "mitm"
+    assert reg["items"]["u1"]["status"] == "body_fetched"
+    assert reg["items"]["u1"]["body_attempts"] == 0
+    assert "body_giveup" not in reg["items"]["u1"]
+
+
+def test_backfill_body_short_body_rejected():
+    row = _backfill_body_row(url=SN_URL, article_key="k1")
+    reg = _reg({"u1": row})
+    ok = ir.backfill_body(reg, url=SN_URL, ak="k1", body="short")
+    assert ok is False
+    assert reg["items"]["u1"]["body"] == ""
+
+
+def test_backfill_body_missing_match_returns_false():
+    row = _backfill_body_row(url=SN_URL, article_key="k1")
+    reg = _reg({"u1": row})
+    ok = ir.backfill_body(reg, url="https://mp.weixin.qq.com/s?__biz=9&mid=9&idx=9&sn=z", ak="k999", body="x" * 200)
+    assert ok is False
+    assert reg["items"]["u1"]["body"] == ""
+
+
+def test_backfill_body_matches_by_url_when_article_key_missing():
+    body = "x" * 200
+    row = _backfill_body_row(url=SN_URL, article_key="k1")
+    reg = _reg({"u1": row})
+    # 只给 URL、不给 article_key，应通过归一化 URL 匹配
+    ok = ir.backfill_body(reg, url=SN_URL, body=body, source="xhr")
+    assert ok is True
+    assert reg["items"]["u1"]["body"] == body
+
+
+def test_backfill_body_fragment_url_matches_full_registry_url():
+    """sn 归一化：抓包只带回 sn，注册表存全 URL（带 chksm）；靠 article_key 匹配。"""
+    body = "x" * 200
+    row = _backfill_body_row(
+        url="https://mp.weixin.qq.com/s?__biz=1&mid=2&idx=3&sn=abc&chksm=zz",
+        article_key="1|2|3",
+    )
+    reg = _reg({"u1": row})
+    ok = ir.backfill_body(reg, url="https://mp.weixin.qq.com/s?__biz=1&mid=2&idx=3&sn=abc", ak="1|2|3", body=body)
+    assert ok is True
+
+
+def test_backfill_body_chksm_diff_matched_by_article_key():
+    """注册表 URL 带 chksm=oldz，抓包 URL 不带 chksm；article_key 一致即匹配。"""
+    body = "x" * 200
+    row = _backfill_body_row(
+        url="https://mp.weixin.qq.com/s?__biz=1&mid=2&idx=3&sn=abc&chksm=oldz",
+        article_key="1|2|3",
+    )
+    reg = _reg({"u1": row})
+    ok = ir.backfill_body(reg, url="https://mp.weixin.qq.com/s?__biz=1&mid=2&idx=3&sn=abc", ak="1|2|3", body=body)
+    assert ok is True
