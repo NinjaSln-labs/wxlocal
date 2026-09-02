@@ -7,8 +7,9 @@
 
 1. **mp 正文抓取自 2026-08-28 22:22 起全灭，原因不是代理。**
    注册表 175 条正文全部产自 08-27 18:05 ~ 08-28 22:22；此后零成功。`WECHAT_FETCH_PROXY`(6696) 实测连通。
-   真实原因：微信对所有 UA（桌面 / iPhone / Android 均实测）返回 ~2.3MB 纯 JS 渲染页——无 `js_content` div、无 SSR 正文、`<title>` 为空；正文改由客户端 XHR（页面可见 `/mp/getappmsgext` 系列接口）按会话拉取。`body_extract.py` 六层正则全部落空。
-   ⇒ HANDOFF 旧提示「查代理」为误诊。
+   08-30 初查结论：微信对桌面 UA 返回 ~2.3MB 纯 JS 渲染页，正文走客户端 XHR。
+
+   **09-02 抓包实验修正（证伪上一条）**：微信 PC 客户端正文**不走 HTTP**，走 **mmsocket**（私有加密二进制协议）直连腾讯内网 IP（`101.226.144.240`），**绕过 HTTP 代理**，mitm 抓不到。HTTP GET 文章 URL 现返回**腾讯验证码（TCaptcha）挑战页**（`captcha.gtimg.com/TCaptcha.js` + `window.cgiData`），非 JS 壳。两条线（chat-watch 卡片 + mp-scroll URL）拿文章全文都依赖 HTTP，HTTP 堵死则全文拿不到。
 2. **enrich 重试缺陷在放大问题**：每轮（约 57s）重试同一批 15 条失败 URL，无退避、无上限、日志每分钟刷 `failed=15`；有触发风控的风险。
 3. **OCR 是现成开关**：`MP_SCROLL_OCR=1` + `.[ocr]`（rapidocr-onnxruntime），默认每 8 轮截屏识别推荐流卡片标题。
 4. **mitm 管道有地基**：`capture/addon.py` + `parsers.py` 已能拦截响应并提取文章 URL/标题，但目前只采元数据、不采正文。
@@ -21,16 +22,19 @@
 - body enrich 加失败退避：`attempts` 计数 + 指数退避 + 上限（5 次后标记 `body_giveup` 不再重试）；跳过无 `sn` 的 URL。
 - 验收：`verify.ps1` 全绿；日志不再每轮重复同一批失败 URL。
 
-### F2 · 正文抓取恢复（P0 · 2–4 天 · 核心攻坚）
+### F2 · 正文抓取恢复（P0 · 核心攻坚 · 待方案验证）
 
-| 路线 | 说明 | 结论 |
+微信客户端正文走 mmsocket 加密直连，绕过 HTTP 代理。HTTP GET 文章 URL 现被验证码（TCaptcha）拦截。两条线（chat-watch/mp-scroll）拿文章全文都依赖 HTTP，HTTP 堵死。
+
+| 路线 | 说明 | 状态 |
 |------|------|------|
-| **A（推荐）** | 扩展 mitm addon：用户点开文章时拦截正文 XHR 响应，提取正文写回注册表 | 地基全在（`_is_high_value` 已识别高价值响应）；零新依赖；天然只抓"真点开过"的文章 |
-| B（备选） | 从 WeChatAppEx 配置取会话 cookie 模拟 XHR | 可自动化但参数脆弱、有风控风险；作 A 的补充验证 |
-| C | headless 浏览器渲染 | 依赖重、性能差，不采用 |
+| **A（验证码 API 破解，推荐）** | 注册 2Captcha / CapSolver 付费 API；`urllib` 拿验证码 → API 解题 → 过码拿正文 → `backfill_body` 写回 | 待注册 API 验证 |
+| B（桌面浏览器 Playwright） | 半自动，需用户开浏览器点或 Playwright 模拟；走 8848 代理拦正文 | 待验证 |
+| C（mmsocket 逆向） | 私有加密二进制协议，成本极高，随客户端版本脆弱 | 不采用 |
+| D（放弃全自动） | 保留标题+摘要，正文靠手动 | 保底 |
 
-- 存量清理：301 条无正文 URL 一次性判定，08-28 前的旧链接大概率永久抓不到，标记归档。
-- 验收：点开 10 篇 → 注册表 body 新增 ≥10，`fetched_at` 更新。
+- 写回管道 `backfill_body`（[0400ea4]）+ URL/article_key 匹配已就位；存量 19 条有 sn 无正文行待刷
+- 验收：批量 10 篇 → 注册表 body 新增 ≥10，`fetched_at` 更新
 
 ### F3 · OCR 标题扩量（P1 · ~0.5 天）
 
@@ -50,4 +54,7 @@
 
 ## 启动顺序
 
-**F1 → F2(路线 A) → F3**；三步完成后评审是否立项 F4。F1/F3 无决策依赖；F2 路线 A 验证需人工配合点开文章。
+**已完成：F1（正文 enrich 退避）**；**F3（OCR 标题扩量）用户取消不开**。
+**进行中：F2（正文恢复）→ 待验证码 API 破解方案验证后再开工。**
+
+F2 路线 A（验证码 API）验证通过后再评审是否立项 F4。
