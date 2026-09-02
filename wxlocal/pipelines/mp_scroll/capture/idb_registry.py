@@ -14,6 +14,12 @@ from wxlocal.shared.dedup import dedup_key, load_known_keys
 from wxlocal.shared.http_fetch import fetch_http_body
 from wxlocal.shared.mp_filter import is_dev_related
 from wxlocal.pipelines.mp_scroll.capture.body_extract import extract_body_from_html
+from wxlocal.pipelines.mp_scroll.capture.constants import (
+    MP_SCROLL_BODY_BACKOFF_HOURS as BODY_BACKOFF_HOURS,
+    MP_SCROLL_BODY_MAX_ATTEMPTS as BODY_MAX_ATTEMPTS,
+    MP_SCROLL_TITLE_BACKOFF_HOURS as TITLE_BACKOFF_HOURS,
+    MP_SCROLL_TITLE_MAX_ATTEMPTS as TITLE_MAX_ATTEMPTS,
+)
 from wxlocal.pipelines.mp_scroll.capture.feed_ocr import scan_visible_feed, title_registry_key
 from wxlocal.pipelines.mp_scroll.capture.idb_reader import article_key, scan_live, url_has_sn
 from wxlocal.config.paths import (
@@ -130,6 +136,10 @@ def merge_cards(registry: dict[str, Any], cards: list[dict[str, str]], *, live_c
                 "marked": False,
                 "body": "",
                 "fetched_at": None,
+                "body_attempts": 0,
+                "body_giveup": False,
+                "title_attempts": 0,
+                "title_giveup": False,
             }
             if title:
                 ok, reason = is_dev_related(title, "", row.get("source_name", ""))
@@ -203,6 +213,10 @@ def merge_ocr_titles(registry: dict[str, Any], titles: list[str]) -> list[str]:
             "marked": False,
             "body": "",
             "fetched_at": when,
+            "body_attempts": 0,
+            "body_giveup": False,
+            "title_attempts": 0,
+            "title_giveup": False,
         }
         ok, reason = is_dev_related(norm, "", "ocr:feed")
         items[key]["dev_related"] = ok
@@ -290,20 +304,59 @@ def proxy_ready() -> bool:
     return False
 
 
-def enrich_pending(registry: dict[str, Any], *, limit: int | None = None) -> dict[str, int]:
-    """给无标题条目抓标题，并打上 dev_related 标记。"""
+def _in_backoff_window(row: dict[str, Any], attempts: int, backoff_hours: int, now: datetime) -> bool:
+    """行仍在退避窗口内 → True（应跳过重试）。
+
+    线性退避基于 first_seen：第 N 次失败后需等待 N*backoff_hours。
+    elapsed >= attempts*backoff_hours 即窗口已到期，可重试。
+    """
+    if attempts <= 0:
+        return False
+    first_seen = row.get("first_seen", "")
+    if not first_seen:
+        return False
+    try:
+        seen_dt = datetime.fromisoformat(first_seen)
+    except (ValueError, TypeError):
+        return False
+    elapsed_hours = (now - seen_dt).total_seconds() / 3600
+    return elapsed_hours < attempts * backoff_hours
+
+
+def enrich_pending(registry: dict[str, Any], *, limit: int | None = None, now: datetime | None = None) -> dict[str, int]:
+    """给无标题条目抓标题，并打上 dev_related 标记。
+
+    带 title_attempts / title_giveup 状态 + 线性退避（基于 first_seen）。
+    """
     batch = limit or ENRICH_BATCH
-    pending = [
-        row
-        for row in registry.get("items", {}).values()
-        if not row.get("title")
-        and row.get("status") in ("discovered", "title_failed")
-        and url_has_sn(row.get("url", ""))
-    ]
+    max_attempts = TITLE_MAX_ATTEMPTS
+    backoff_hours = TITLE_BACKOFF_HOURS
+    if now is None:
+        now = datetime.now()
+
+    pending: list[dict[str, Any]] = []
+    backoff_skipped = 0
+    for row in registry.get("items", {}).values():
+        if row.get("title"):
+            continue
+        if row.get("status") not in ("discovered", "title_failed"):
+            continue
+        if not url_has_sn(row.get("url", "")):
+            continue
+        if row.get("title_giveup"):
+            continue
+        if "title_attempts" not in row:
+            row["title_attempts"] = 0
+        attempts = row.get("title_attempts", 0)
+        if attempts > 0 and _in_backoff_window(row, attempts, backoff_hours, now):
+            backoff_skipped += 1
+            continue
+        pending.append(row)
+
     pending.sort(key=lambda x: x.get("first_seen", ""), reverse=True)
     pending = pending[:batch]
     if not pending:
-        return {"fetched": 0, "titles": 0, "failed": 0}
+        return {"fetched": 0, "titles": 0, "failed": 0, "giveup": 0, "backoff_skipped": backoff_skipped}
 
     opener = build_opener()
     titles = failed = 0
@@ -312,8 +365,13 @@ def enrich_pending(registry: dict[str, Any], *, limit: int | None = None) -> dic
         if title:
             row["title"] = title
             row["status"] = "title_fetched"
+            row["title_attempts"] = 0
+            row.pop("title_giveup", None)
             titles += 1
         else:
+            row["title_attempts"] = row.get("title_attempts", 0) + 1
+            if row["title_attempts"] >= max_attempts:
+                row["title_giveup"] = True
             row["status"] = "title_failed"
             failed += 1
         if body:
@@ -330,24 +388,57 @@ def enrich_pending(registry: dict[str, Any], *, limit: int | None = None) -> dic
         row["fetched_at"] = _now()
         time.sleep(0.35)
 
-    return {"fetched": len(pending), "titles": titles, "failed": failed}
+    return {"fetched": len(pending), "titles": titles, "failed": failed, "giveup": 0, "backoff_skipped": backoff_skipped}
 
 
-def enrich_body_pending(registry: dict[str, Any], *, limit: int | None = None) -> dict[str, int]:
-    """给已有 title + sn 但无正文的条目补 body。"""
+def enrich_body_pending(registry: dict[str, Any], *, limit: int | None = None, now: datetime | None = None) -> dict[str, int]:
+    """给已有 title + sn 但无正文的条目补 body。
+
+    带 body_attempts / body_giveup 状态 + 线性退避（基于 first_seen）。
+    存量无 body_attempts 键的行（F1 前历史积压）首次跑一次性置 body_giveup。
+    """
     batch = limit or BODY_ENRICH_BATCH
-    pending = [
-        row
-        for row in registry.get("items", {}).values()
-        if row.get("title")
-        and url_has_sn(row.get("url", ""))
-        and len(row.get("body") or "") < 80
-        and row.get("status") in ("title_fetched", "body_fetched", "discovered", "title_idb")
-    ]
+    max_attempts = BODY_MAX_ATTEMPTS
+    backoff_hours = BODY_BACKOFF_HOURS
+    if now is None:
+        now = datetime.now()
+
+    pending: list[dict[str, Any]] = []
+    legacy_giveup = 0
+    backoff_skipped = 0
+    for row in registry.get("items", {}).values():
+        if not row.get("title"):
+            continue
+        if not url_has_sn(row.get("url", "")):
+            continue
+        if len(row.get("body") or "") >= 80:
+            continue
+        if row.get("status") not in ("title_fetched", "body_fetched", "discovered", "title_idb"):
+            continue
+        if row.get("body_giveup"):
+            continue
+        # 存量历史积压行（无 body_attempts 键）首次跑一次性放弃，不再骚扰
+        if "body_attempts" not in row:
+            row["body_giveup"] = True
+            row["body_attempts"] = max_attempts
+            legacy_giveup += 1
+            continue
+        attempts = row.get("body_attempts", 0)
+        if attempts > 0 and _in_backoff_window(row, attempts, backoff_hours, now):
+            backoff_skipped += 1
+            continue
+        pending.append(row)
+
     pending.sort(key=lambda x: x.get("last_seen", ""), reverse=True)
     pending = pending[:batch]
     if not pending:
-        return {"fetched": 0, "bodies": 0, "failed": 0}
+        return {
+            "fetched": 0,
+            "bodies": 0,
+            "failed": 0,
+            "giveup": legacy_giveup,
+            "backoff_skipped": backoff_skipped,
+        }
 
     opener = build_opener()
     bodies = failed = 0
@@ -358,12 +449,23 @@ def enrich_body_pending(registry: dict[str, Any], *, limit: int | None = None) -
             row["body_source"] = "HTTP抓取"
             row["status"] = "body_fetched"
             row["fetched_at"] = _now()
+            row["body_attempts"] = 0
+            row.pop("body_giveup", None)
             bodies += 1
         else:
+            row["body_attempts"] = row.get("body_attempts", 0) + 1
+            if row["body_attempts"] >= max_attempts:
+                row["body_giveup"] = True
             failed += 1
         time.sleep(0.35)
 
-    return {"fetched": len(pending), "bodies": bodies, "failed": failed}
+    return {
+        "fetched": len(pending),
+        "bodies": bodies,
+        "failed": failed,
+        "giveup": legacy_giveup,
+        "backoff_skipped": backoff_skipped,
+    }
 
 
 def export_dev_corpus(registry: dict[str, Any]) -> dict[str, Any]:

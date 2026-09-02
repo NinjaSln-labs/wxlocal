@@ -14,6 +14,7 @@ RUNTIME_FILES = [
     REPO_ROOT / "wxlocal" / "config" / "config.py",
     REPO_ROOT / "wxlocal" / "pipelines" / "chat_watch" / "daemon.py",
     REPO_ROOT / "wxlocal" / "pipelines" / "mp_scroll" / "daemon.py",
+    REPO_ROOT / "wxlocal" / "pipelines" / "mp_scroll" / "capture" / "constants.py",
     REPO_ROOT / "launchers" / "win" / "run_daemon.vbs",
     REPO_ROOT / "WxLocalAutostart.vbs",
 ]
